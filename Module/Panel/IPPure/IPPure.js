@@ -40,6 +40,7 @@ Promise.all([fetchData(IPAPI_URL), fetchData(IPPURE_URL)])
 
     let pureLine = "纯净度：查询失败";
     let asnLine = "";
+    let nativeLine = "";
     try {
       const pure = JSON.parse(ippureRaw);
       const s = pure.fraudScore;
@@ -48,6 +49,7 @@ Promise.all([fetchData(IPAPI_URL), fetchData(IPPURE_URL)])
         pureLine = `纯净度：${s} ${tag}`;
       }
       if (pure.asn) asnLine = `ASN：${pure.asn} (${pure.asOrganization || ""})`;
+      nativeLine = `原生IP：${pure.isResidential ? "Yes" : "No"}`;
     } catch (e) {}
 
     const lines = [
@@ -56,6 +58,7 @@ Promise.all([fetchData(IPAPI_URL), fetchData(IPPURE_URL)])
       `所在地：${loc}`,
       asnLine,
       pureLine,
+      nativeLine,
     ].filter(Boolean).join("\n");
 
     $done({
