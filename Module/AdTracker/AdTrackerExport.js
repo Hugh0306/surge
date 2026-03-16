@@ -65,4 +65,5 @@ try {
   result = "脚本错误: " + err.message + "\nraw长度: " + (raw ? raw.length : "null");
 }
 
-$done({ response: { status: 200, body: result } });
+// Surge cron 脚本直接传字符串给 $done 会显示为 Result 纯文本
+$done(result);
