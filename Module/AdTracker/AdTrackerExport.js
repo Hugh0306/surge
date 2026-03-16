@@ -1,14 +1,13 @@
 /*
- * AdTracker 导出
- * 结果写入持久化存储，通过通知提示完成
- * 然后刷新面板即可看到完整导出内容
+ * AdTracker 导出 - 手动运行
+ * 结果直接显示在脚本运行页面（JSON格式但包含完整数据）
+ * 不发通知
  */
 
-var raw = "";
 var result = "";
 
 try {
-  raw = $persistentStore.read("ad_tracker_log") || "[]";
+  var raw = $persistentStore.read("ad_tracker_log") || "[]";
   var log = JSON.parse(raw);
 
   if (!log || log.length === 0) {
@@ -93,7 +92,4 @@ try {
   result = "脚本错误: " + err.message;
 }
 
-// 写入持久化存储，面板脚本会读取并展示
-$persistentStore.write(result, "ad_tracker_export");
-$notification.post("AdTracker 导出完成", "共导出 " + result.split("\n").length + " 行", "请刷新面板查看完整内容，面板内容可长按复制");
-$done();
+$done({ response: { status: 200, body: result } });
