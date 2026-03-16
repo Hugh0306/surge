@@ -4,79 +4,48 @@
  * 原理：拦截广告接口的响应，返回空广告数据，
  * 让 App 认为"没有广告可展示"，而非请求失败。
  *
- * 适配接口：
- *  1. /api/ad/ 系列 — 主广告接口（开屏、插屏、信息流）
- *  2. /obj/ad-tetris-site/ — 广告素材资源
- *  3. /service/2/app_config/ — 启动配置（含广告策略）
- *  4. /motor/grpc/sdk.ad/ — gRPC 广告请求
+ * 适配接口（真实 API 域名: dcarapi.com）：
+ *  1. /motor/ad/api/v1/common — 主广告接口（开屏、插屏）
+ *  2. /motor/brand/v6/launch — 启动配置（含广告策略）
+ *  3. /api/ad/ — dongchedi.com 域名下的广告接口
+ *  4. /service/N/app_config — 启动配置
  */
 
 const url = $request.url;
 
-// 广告接口响应处理
 if ($response) {
   let body = $response.body;
 
   try {
-    // /api/ad/ 系列接口 — 开屏、插屏等
-    if (/\/api\/ad\//i.test(url)) {
-      let obj = JSON.parse(body);
+    let obj = JSON.parse(body);
 
-      // 清空广告数据列表
-      if (obj.data) {
-        // 常见结构：data.ad_data / data.ads / data.ad_list
-        if (obj.data.ad_data) obj.data.ad_data = [];
-        if (obj.data.ads) obj.data.ads = [];
-        if (obj.data.ad_list) obj.data.ad_list = [];
-        if (obj.data.splash) obj.data.splash = null;
-        if (obj.data.splash_ad) obj.data.splash_ad = null;
-
-        // 设置广告间隔为极大值，减少后续请求
-        if (obj.data.interval !== undefined) obj.data.interval = 999999;
-        if (obj.data.splash_interval !== undefined) obj.data.splash_interval = 999999;
-        if (obj.data.show_interval !== undefined) obj.data.show_interval = 999999;
-      }
-
-      // 顶层可能有 ads 字段
-      if (obj.ads) obj.ads = [];
-      if (obj.ad_data) obj.ad_data = [];
-
+    // dcarapi.com/motor/ad/ — 懂车帝主广告接口
+    if (/\/motor\/ad\//i.test(url)) {
+      // 深度清理所有广告相关字段
+      deepCleanAds(obj);
       body = JSON.stringify(obj);
     }
 
-    // app_config 启动配置 — 可能包含广告开关和策略
+    // dcarapi.com/motor/brand/.../launch — 启动接口
+    else if (/\/launch/i.test(url) && /dcarapi/i.test(url)) {
+      deepCleanAds(obj);
+      body = JSON.stringify(obj);
+    }
+
+    // dongchedi.com/api/ad/ 和 snssdk.com/api/ad/
+    else if (/\/api\/ad\//i.test(url)) {
+      deepCleanAds(obj);
+      body = JSON.stringify(obj);
+    }
+
+    // app_config 启动配置
     else if (/\/service\/\d\/app_config/i.test(url)) {
-      let obj = JSON.parse(body);
-
-      // 递归清理含 ad/splash 关键字的字段
-      function cleanAds(o) {
-        if (!o || typeof o !== "object") return;
-        for (let key of Object.keys(o)) {
-          const lk = key.toLowerCase();
-          if (lk.includes("splash") || lk === "ad" || lk === "ads" || lk === "ad_data"
-              || lk.includes("ad_") || lk.includes("_ad") || lk === "advert") {
-            if (Array.isArray(o[key])) {
-              o[key] = [];
-            } else if (typeof o[key] === "object" && o[key] !== null) {
-              o[key] = {};
-            } else if (typeof o[key] === "number") {
-              o[key] = 0;
-            } else if (typeof o[key] === "boolean") {
-              o[key] = false;
-            }
-          }
-        }
-      }
-
-      if (obj.data) cleanAds(obj.data);
-      cleanAds(obj);
-
+      deepCleanAds(obj);
       body = JSON.stringify(obj);
     }
 
   } catch (e) {
-    // JSON 解析失败说明不是 JSON 响应，直接返回空
-    // 可能是广告素材（图片/视频），返回空 body
+    // 非 JSON 响应（如广告素材），返回空
     if (/\/obj\/ad-tetris-site\//i.test(url) || /\/ad\.union\.api/i.test(url)) {
       body = "";
     }
@@ -85,4 +54,68 @@ if ($response) {
   $done({ body: body });
 } else {
   $done({});
+}
+
+/**
+ * 深度清理 JSON 对象中的广告相关字段
+ * 支持嵌套对象递归处理
+ */
+function deepCleanAds(obj) {
+  if (!obj || typeof obj !== "object") return;
+
+  const adKeys = [
+    "ad", "ads", "ad_data", "ad_list", "ad_info", "ad_items",
+    "splash", "splash_ad", "splash_data", "splash_info",
+    "open_screen", "openscreen", "preload_ad", "preload_ads",
+    "launch_ad", "launch_ads", "interstitial",
+    "rewarded", "banner_ad", "feed_ad", "native_ad"
+  ];
+
+  const intervalKeys = [
+    "interval", "splash_interval", "show_interval",
+    "ad_interval", "request_interval", "display_interval",
+    "load_interval", "refresh_interval"
+  ];
+
+  for (let key of Object.keys(obj)) {
+    const lk = key.toLowerCase();
+
+    // 清空广告数据字段
+    if (adKeys.includes(lk) || (lk.includes("ad") && (lk.includes("data") || lk.includes("list") || lk.includes("info")))) {
+      if (Array.isArray(obj[key])) {
+        obj[key] = [];
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        obj[key] = {};
+      } else if (typeof obj[key] === "string") {
+        obj[key] = "";
+      } else if (typeof obj[key] === "number") {
+        obj[key] = 0;
+      } else if (typeof obj[key] === "boolean") {
+        obj[key] = false;
+      }
+      continue;
+    }
+
+    // 设置广告间隔为极大值
+    if (intervalKeys.some(ik => lk === ik || lk.includes(ik))) {
+      if (typeof obj[key] === "number") {
+        obj[key] = 999999999;
+      }
+      continue;
+    }
+
+    // 递归处理嵌套对象（只处理第一层嵌套，避免性能问题）
+    if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
+      for (let subKey of Object.keys(obj[key])) {
+        const slk = subKey.toLowerCase();
+        if (adKeys.includes(slk)) {
+          if (Array.isArray(obj[key][subKey])) {
+            obj[key][subKey] = [];
+          } else if (typeof obj[key][subKey] === "object") {
+            obj[key][subKey] = {};
+          }
+        }
+      }
+    }
+  }
 }

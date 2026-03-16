@@ -23,8 +23,8 @@ DOMAIN-SUFFIX,uyunad.com,REJECT
 DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT
 DOMAIN-SUFFIX,pangolin-sdk-toutiao1.com,REJECT
 DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
-# 字节监控上报
-DOMAIN-KEYWORD,zijieapi.com,REJECT
+# 字节监控上报（仅拦截监控域名，不用 KEYWORD 以免影响脚本处理）
+DOMAIN-SUFFIX,mon.zijieapi.com,REJECT
 # 腾讯广告 SDK QUIC
 DOMAIN,sdkquic.e.qq.com,REJECT
 # IP 直连广告（阿里 HTTPDNS + 广告）
@@ -138,9 +138,10 @@ IP-CIDR,203.107.33.92/32,REJECT,no-resolve
 ^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php\?a=hot_search_users - reject
 https?:\/\/m\.sd\.10086\.cn\/zapi\/app_common\/homeWelcome\/welcome.do - reject
 
-# 懂车帝开屏广告（改用脚本处理，避免请求失败触发备用广告）
-# 广告素材仍用 reject（不需要脚本处理的静态资源）
+# 懂车帝开屏广告（API 域名: dcarapi.com，广告素材用 reject）
 ^https?:\/\/lf.*\.dongchedi\.com\/obj\/ad-tetris-site\/ - reject
+# 懂车帝字节 Gecko 动态资源配置（可能下发广告配置）
+^https?:\/\/gecko\.zijieapi\.com\/.*\/ad - reject
 # 穿山甲广告 SDK（全域名拦截，覆盖 get_ads/stats/batch 等所有路径）
 ^https?:\/\/api-access\.pangolin-sdk-toutiao1?\.com\/ - reject
 ^https?:\/\/ether-pack\.pangolin-sdk-toutiao\.com\/ - reject
@@ -183,7 +184,9 @@ http-response-jq ^https?:\/\/api\.weibo\.cn\/\d\/ug\/checkin\/stream '.items |= 
 http-response-jq ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/page\/.*conf\.do '.data |= del(.masterLoginGuideList, .masterOperatorList, .functionOperatorInfoList, .memberOperator, .activityTabInfoList, .extList)'
 
 [Script]
-# 懂车帝去开屏广告（脚本方式：修改响应返回空广告数据）
+# 懂车帝去开屏广告（真实 API 域名: dcarapi.com，非 dongchedi.com）
+dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dcarapi\.com\/motor\/ad\/, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
+dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dcarapi\.com\/motor\/brand\/.*\/launch, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
 dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dongchedi\.com\/(api\/ad\/|service\/\d\/app_config), script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
 dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.snssdk\.com\/api\/ad\/, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
 
@@ -271,4 +274,4 @@ weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.
 weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.dongchedi.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.dongchedi.com, *.dcarapi.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com
