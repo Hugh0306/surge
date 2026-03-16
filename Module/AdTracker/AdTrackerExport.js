@@ -1,6 +1,6 @@
 /*
  * AdTracker 导出
- * 运行后结果直接显示在脚本界面
+ * 运行后结果直接显示在脚本运行页面，可复制
  */
 
 var result = "";
@@ -10,8 +10,9 @@ try {
   var log = JSON.parse(raw);
 
   if (!log || log.length === 0) {
-    result = "暂无抓包记录";
+    result = "暂无抓包记录，请先开启 AdTracker 模块";
   } else {
+    // 按域名聚合
     var dm = {};
     var i, item, domain, m, path, t;
 
@@ -23,7 +24,7 @@ try {
         if (m) domain = m[1];
       } catch (e) {}
 
-      if (!dm[domain]) dm[domain] = { c: 0, t: {}, p: {} };
+      if (!dm[domain]) dm[domain] = { c: 0, t: {}, p: {}, last: "" };
       dm[domain].c++;
 
       if (item.tags) {
@@ -38,32 +39,65 @@ try {
           dm[domain].p[path] = 1;
         }
       } catch (e) {}
+
+      if (item.time) dm[domain].last = item.time;
     }
 
+    // 排序
     var arr = [];
     for (var d in dm) {
-      if (dm.hasOwnProperty(d)) arr.push({ d: d, c: dm[d].c, t: dm[d].t, p: dm[d].p });
+      if (dm.hasOwnProperty(d)) arr.push(dm[d]);
+      dm[d].d = d;
     }
     arr.sort(function (a, b) { return b.c - a.c; });
 
-    result = log.length + " 条记录 / " + arr.length + " 个域名\n";
-    result += "========================\n\n";
-
+    // 过滤掉去广告脚本自身的请求（误报）
+    var filtered = [];
     for (i = 0; i < arr.length; i++) {
-      var e = arr[i];
+      if (arr[i].d === "raw.githubusercontent.com") continue;
+      filtered.push(arr[i]);
+    }
+
+    // 输出
+    result = "AdTracker 抓包报告\n";
+    result += "共 " + log.length + " 条 / " + filtered.length + " 个域名\n";
+    result += "────────────────────\n\n";
+
+    for (i = 0; i < filtered.length; i++) {
+      var e = filtered[i];
       var tags = Object.keys(e.t).join(", ");
       var paths = Object.keys(e.p);
-      result += e.d + "  x" + e.c + "\n";
-      result += "  [" + tags + "]\n";
-      for (var k = 0; k < paths.length; k++) {
-        result += "  " + paths[k] + "\n";
+
+      result += (i + 1) + ". " + e.d + "\n";
+      result += "   命中: " + e.c + " 次";
+      if (e.last) result += "  最近: " + e.last;
+      result += "\n";
+      result += "   标签: " + tags + "\n";
+      if (paths.length > 0) {
+        result += "   路径:\n";
+        for (var k = 0; k < paths.length; k++) {
+          result += "     " + paths[k] + "\n";
+        }
       }
       result += "\n";
     }
+
+    // 生成可直接使用的 Surge 规则建议
+    result += "────────────────────\n";
+    result += "Surge 规则建议 (仅供参考)\n\n";
+
+    for (i = 0; i < filtered.length; i++) {
+      var f = filtered[i];
+      var fd = f.d;
+      // 纯广告域名 → DOMAIN REJECT
+      if (/^ads?\./i.test(fd) || /adservice|admob|pangolin|pglstatp/i.test(fd)) {
+        result += "DOMAIN," + fd + ",REJECT\n";
+      }
+    }
+    result += "\n";
   }
 } catch (err) {
-  result = "脚本错误: " + err.message + "\nraw长度: " + (raw ? raw.length : "null");
+  result = "脚本错误: " + err.message;
 }
 
-// Surge cron 脚本直接传字符串给 $done 会显示为 Result 纯文本
 $done(result);
