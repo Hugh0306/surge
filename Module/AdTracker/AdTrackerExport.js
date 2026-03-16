@@ -1,16 +1,18 @@
 /*
  * AdTracker 导出
- * 运行后结果直接显示在脚本运行页面，可复制
+ * 结果写入持久化存储，通过通知提示完成
+ * 然后刷新面板即可看到完整导出内容
  */
 
+var raw = "";
 var result = "";
 
 try {
-  var raw = $persistentStore.read("ad_tracker_log") || "[]";
+  raw = $persistentStore.read("ad_tracker_log") || "[]";
   var log = JSON.parse(raw);
 
   if (!log || log.length === 0) {
-    result = "暂无抓包记录，请先开启 AdTracker 模块";
+    result = "暂无抓包记录";
   } else {
     var dm = {};
     var i, item, domain, m, path, t;
@@ -48,7 +50,6 @@ try {
     }
     arr.sort(function (a, b) { return b.c - a.c; });
 
-    // 过滤误报
     var filtered = [];
     for (i = 0; i < arr.length; i++) {
       if (arr[i].d === "raw.githubusercontent.com") continue;
@@ -92,4 +93,7 @@ try {
   result = "脚本错误: " + err.message;
 }
 
-$done({title: "AdTracker", htmlMessage: "<pre>" + result + "</pre>"});
+// 写入持久化存储，面板脚本会读取并展示
+$persistentStore.write(result, "ad_tracker_export");
+$notification.post("AdTracker 导出完成", "共导出 " + result.split("\n").length + " 行", "请刷新面板查看完整内容，面板内容可长按复制");
+$done();
