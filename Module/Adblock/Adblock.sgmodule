@@ -66,6 +66,8 @@ DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/resource-exposure\/config - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/sp\/flow\/popup\/query - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vipmall\/couponcfg\/get - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/iyunIds(?:\?.*)? - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/prefetch\/select - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/w?eapi\/(resource-exposure\/)?activity - reject
 ^https?:\/\/boot.*weibo\.com\/v\d\/ad\/realtime - reject
 ^https?:\/\/cdn\.cmgadx\.com\/sdk\/pool\/\w+\.json - reject
