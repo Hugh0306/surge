@@ -1,0 +1,312 @@
+#!name=去广告模块(精简版)
+#!desc=精简版去广告，包含：哔哩哔哩、微博、百度网盘、高德地图、小红书、网易云、彩云天气、闲鱼、12306、微信、京东、淘宝、拼多多、美团、中国移动、联通、滴滴、哈啰、航旅纵横、WPS、猎聘、山姆、转转、安居客、米家
+#!category=🛡️ 去广告
+
+[General]
+
+[Rule]
+DOMAIN,ad.12306.cn,DIRECT
+DOMAIN,adstrategy.biz.weibo.com,REJECT
+DOMAIN,sdkapp.uve.weibo.com,DIRECT
+DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
+# 哔哩哔哩广告域名（集成 Maasea/sgmodule 规则）
+DOMAIN,cm.bilibili.com,REJECT
+DOMAIN-WILDCARD,*pcdn*.biliapi.net,REJECT
+# 美柚广告域名 - 只拦截已知广告域名，避免误杀图片资源
+DOMAIN,ad.seeyouyima.com,REJECT
+DOMAIN,ab.seeyouyima.com,REJECT
+DOMAIN,ad-logs.seeyouyima.com,REJECT
+DOMAIN,x.seeyouyima.com,REJECT
+DOMAIN-SUFFIX,xmseeyouyima.com,REJECT
+DOMAIN-SUFFIX,uyunad.com,REJECT
+# 穿山甲/字节广告 SDK 域名
+DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT
+DOMAIN-SUFFIX,pangolin-sdk-toutiao1.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+# 字节监控上报（仅拦截监控域名，不用 KEYWORD 以免影响脚本处理）
+DOMAIN-SUFFIX,mon.zijieapi.com,REJECT
+# 腾讯广告 SDK QUIC
+DOMAIN,sdkquic.e.qq.com,REJECT
+# IP 直连广告（阿里 HTTPDNS + 广告）
+IP-CIDR,203.107.33.92/32,REJECT,no-resolve
+
+[URL Rewrite]
+^http:\/\/s3plus\.meituan\.net\/.*\/brandcpt-vedio\/.*\?time - reject
+^https:\/\/acs\.m\.taobao\.com\/gw\/mtop\.fliggy\.crm\.screen\.allresource - reject
+^https:\/\/tnc.*zijieapi\.com\/get_domains - reject
+^https?:\/\/(bdsp-x|dsp-x)\.jd\.com\/adx\/ - reject
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.*splash\.ads - reject
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.idle.ad.expose - reject
+^https?:\/\/(preload-click|preload-impression)\.uve\.weibo\.com\/(interface\/wbpullad\/wbpullad_click\.php|wbapplua\/get_wbpullad_log\.lua) - reject
+^https?:\/\/(s3plus|flowplus)\.meituan\.net\/v\d\/\w+\/linglong\/\w+\.(gif|jpg|mp4) - reject
+^https?:\/\/.*\.amap\.com\/uploadimg\/\w+\.gif - reject
+^https?:\/\/.*\.amap\.com\/ws\/aos\/alimama\/splash_screen - reject
+^https?:\/\/.*\.amap\.com\/ws\/asa\/ads_attribution - reject
+^https?:\/\/.*\.amap\.com\/ws\/boss\/order_web\/\w{8}_information - reject
+^https?:\/\/.*\.amap\.com\/ws\/faas\/amap-navigation\/card-service-route-plan\? - reject
+^https?:\/\/.*\.amap\.com\/ws\/shield\/scene\/recommend - reject
+^https?:\/\/.*\.amap\.com\/ws\/valueadded\/weather - reject
+^https?:\/\/.*\.meituan\.com\/api\/v\d\/(openscreen\?ad|appstatus\?ad|loadInfo\?|startpicture) - reject
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.alimama\.abyss\.unionpage\.get - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/gslb - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/(tag\/)?ads - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/guide\/home_guide - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/search\/notes\/recommend_info\? - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/system_service\/splash - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/user\/teenager\/status - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/data\/native\/matrix_switches - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/v\d+\/stateReport - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.advertisementservice\.getadv\/ - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.aicloud\.splash - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.cbu\.app\.homepage\.startup - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.mos\.app\.homepage\.launch - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alimama\.etao\.config\.query - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.damai\.mec\.popup\.get - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.damai\.wireless\.home\.welcome - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.etao\.noah\.query.*etao_splash - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.film\.mtopadvertiseapi\.queryadvertise\/ - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.wdk\.render\.querysinglepage - reject
+^https?:\/\/api\.(pinduoduo|yangkeduo)\.com\/api\/cappuccino\/splash - reject
+^https?:\/\/api\.weibo\.cn\/.*\/media_homelist - reject
+^https?:\/\/api\.weibo\.cn\/.*account\/recommend_interesttags - reject
+^https?:\/\/api\.weibo\.cn\/.*discovery_home_bottom_getdotinfo - reject
+^https?:\/\/api\.weibo\.cn\/.*finder\/searchbarchange - reject
+^https?:\/\/api\.weibo\.cn\/\d\/ad\/preload - reject
+^https?:\/\/api\.weibo\.cn\/\d\/cardlist\?v_f=.*Weibo_intl - reject
+^https?:\/\/api\.weibo\.cn\/\d\/profile\/recommend_popuser - reject
+^https?:\/\/api\.weibo\.cn\/\d\/push\/info - reject
+^https?:\/\/api\.weibo\.cn\/\d\/statuses\/container_positive - reject
+^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/show - reject
+^https?:\/\/app\.bilibili\.com\/x\/v3\/splash\/ - reject
+^https?:\/\/app\.bilibili\.com\/x\/resource\/show\/splash - reject
+^https?:\/\/i\d\.hdslb\.com\/bfs\/fawkes - reject
+^https?:\/\/i\d\.hdslb\.com\/bfs\/manga-static\/\w+\.(jpg|png)$ - reject
+^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/config\/function\.do - reject
+^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/getRegConfig\.do - reject
+^https?:\/\/appconf\.mail\.163\.com\/mailoperating\/mailmaster\/api\/operator\/get - reject
+# 滴滴出行（完善规则，参考 blackmatrix7）
+^https?:\/\/conf\.diditaxi\.com\.cn\/homepage\/v1\/core - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/boot\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/event\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/ride\/detail\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/publish\/api\/upgrade - reject
+^https?:\/\/capis(-\d)?\.didapinche\.com\/ad\/ - reject
+^https?:\/\/capis-slb\.didapinche\.com\/ad\/ - reject
+^https?:\/\/as\.xiaojukeji\.com\/ep\/as\/conf\?ns=daijia-front - reject
+^https?:\/\/ct\.xiaojukeji\.com\/agent\/v3\/feeds - reject
+^https?:\/\/hd\.xiaojukeji\.com\/d - reject
+^https?:\/\/pt-starimg\.didistatic\.com\/static\/starimg\/node\/.*\.(jpg|png|gif) - reject
+^https?:\/\/res\.xiaojukeji\.com\/resapi\/activity\/get(Ruled|Preload|PasMultiNotices) - reject
+^https?:\/\/res\.xiaojukeji\.com\/resapi\/activity\/mget - reject
+^https?:\/\/www\.didapinche\.com\/app\/adstat\/ - reject
+# 哈啰出行
+^https?:\/\/gameapi\.hellobike\.com\/api - reject
+# 云闪付
+^https?:\/\/wallet\.95516\.com\/s\/wl\/icon\/long - reject
+^https?:\/\/(tysdk|ads)\.95516\.com - reject
+^https?:\/\/(discardrp|startup)\.umetrip\.com\/gateway\/api\/umetrip\/native - reject
+^https?:\/\/img\.umetrip\.com\/fs\/advert\/ - reject
+^https?:\/\/ios\.wps\.cn\/ad-statistics-service - reject
+^https?:\/\/m1\.ad\.10010\.com\/noticeMag\/images\/imageUpload\/2\d{3} - reject
+^https?:\/\/m\.client\.10010\.com\/mobileService\/(activity|customer)\/(accountListData|get_client_adv|get_startadv) - reject
+^https?:\/\/m\.client\.10010\.com\/uniAdmsInterface\/(getHomePageAd|getWelcomeAd) - reject
+^https?:\/\/api-ac\.liepin\.com\/api\/com\.liepin\.cyclops\.live\.get-ad-cards - reject
+^https?:\/\/api-wanda\.liepin\.com\/api\/com\.liepin\.cbp\.baizhong\.op\.v2-show-4app - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v1\/sams\/sams-user\/(window\/getGoUpPlus|screen_promotion\/get) - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/channel\/portal\/AdgroupData - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/configuration\/appVersionUpdate\/getAppVersionUpdateInfo - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/configuration\/personCenterEntrance\/query - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/goods-portal\/spu\/searchRecommendPool - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/trade\/order\/getOftenBuyGoods - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zz\/transfer\/userred\?scene=homePage - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zz\/v2\/zzlogic\/getOpenScreen - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zzopen\/popwindow\/getallpopwin\? - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zzx\/transfer\/getConfigInfo$ - reject
+^https?:\/\/pic\d\.ajkimg\.com\/mat\/\w+\?imageMogr\d\/format\/jpg\/thumbnail\/\d{3}x\d{4}$ - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/comment\/feed\/inserted\/resources - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/content\/activity\/music\/jar\/template\/list - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/resource-exposure\/config - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/sp\/flow\/popup\/query - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vipmall\/couponcfg\/get - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/iyunIds(?:\?.*)? - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/prefetch\/select - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/w?eapi\/(resource-exposure\/)?activity - reject
+^https?:\/\/boot.*weibo\.com\/v\d\/ad\/realtime - reject
+^https?:\/\/cdn\.cmgadx\.com\/sdk\/pool\/\w+\.json - reject
+^https?:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/DN\/init\/startInit - reject
+^https?:\/\/.*\.10086\.cn\/.*(advert|splash|startup|welcome) - reject
+^https?:\/\/gd\.10086\.cn\/gmccapp\/serv\/\?servicename=GMCCAPP_704_002_001_001 - reject
+^https?:\/\/guide-acs\.m\.taobao\.com\/gw\/mtop\.fc\.resource\.tacdata\.get - reject
+^https?:\/\/guide-acs\.m\.taobao\.com\/gw\/mtop\.taobao\.wireless\.home\.splash\.awesome\.get - reject
+^https?:\/\/gx\.10086\.cn\/zt-portal\/gxhzg\/portal\/app\/api\/v - reject
+^https?:\/\/img\.meituan\.net\/(adunion|display|midas)\/\w+\.(gif|jpg|jpg\.webp)$ - reject
+^https?:\/\/img\.meituan\.net\/(bizad|brandCpt)\/\w+\.(png|jpg) - reject
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/channel\/module\/opens - reject
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/popup - reject
+^https?:\/\/m?api\.weibo\.c(n|om)\/\d/push/daily - reject
+^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/ad\/weibointl\? - reject
+^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/hot\/hours_spotlight - reject
+^https?:\/\/p\d\.meituan\.net\/(bizad|wmbanner)\/\w+\.jpg - reject
+^https?:\/\/p\d\.meituan\.net\/movie\/\w+\.jpg\?may_covertWebp - reject
+^https?:\/\/peisongapi\.meituan\.com\/client\/getInitiateImage - reject
+^https?:\/\/sdkapp\.uve\.weibo\.com\/interface\/sdk\/sdkconfig\.php - reject
+^https?:\/\/smsrebuild1\.mail\.10086\.cn\/together\/s - reject
+^https?:\/\/wap\.js\.10086\.cn\/jsmccClient\/cd\/market_content\/api\/v\d\/market_content\.page\.query - reject
+^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php\?a=hot_search_users - reject
+https?:\/\/m\.sd\.10086\.cn\/zapi\/app_common\/homeWelcome\/welcome.do - reject
+
+# 懂车帝开屏广告（API 域名: dcarapi.com，广告素材用 reject）
+^https?:\/\/lf.*\.dongchedi\.com\/obj\/ad-tetris-site\/ - reject
+# 懂车帝字节 Gecko 动态资源配置（可能下发广告配置）
+^https?:\/\/gecko\.zijieapi\.com\/.*\/ad - reject
+# 穿山甲广告 SDK（全域名拦截，覆盖 get_ads/stats/batch 等所有路径）
+^https?:\/\/api-access\.pangolin-sdk-toutiao1?\.com\/ - reject
+^https?:\/\/ether-pack\.pangolin-sdk-toutiao\.com\/ - reject
+^https?:\/\/.*\.pglstatp-toutiao\.com\/ - reject
+# 字节系广告 SDK（火山引擎 Volces）
+^https?:\/\/.*\.volces\.com\/.*ad - reject
+^https?:\/\/.*\.volceapplog\.com\/.* - reject
+^https?:\/\/lf-cdn-tos\.bytescm\.com\/.* - reject
+^https?:\/\/analytics\.oceanengine\.com\/.* - reject
+# 字节系监控上报
+^https?:\/\/mon.*\.zijieapi\.com\/ - reject
+# 腾讯广点通广告 + SDK QUIC
+^https?:\/\/.*\.gdt\.qq\.com\/.* - reject
+^https?:\/\/sdkquic\.e\.qq\.com\/ - reject
+# 阿里妈妈广告
+^https?:\/\/h-adashx.*\.ut\.taobao\.com\/.* - reject
+^https?:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/DN\/explorePage\/getAdverList - reject
+^https?:\/\/clientaccess\.10086\.cn\/biz-orange\/DN\/init\/startInit - reject
+^https?:\/\/mcmm\.caiyun\.feixin\.10086\.cn:80\/mcmm\/api\/IAdvert - reject
+^https?:\/\/(client|h)\.app\.coc\.10086\.cn\/biz-orange\/DN\/emotionMarket - reject
+^https?:\/\/mcmm\.caiyun\.feixin\.10086\.cn\/mcmm\/api\/v\d\/getAdverts - reject
+^https?:\/\/res\.mall\.10010\.cn\/mall\/common\/js\/fa\.js?referer= - reject
+^https?:\/\/x\.seeyouyima\.com\/adx\/ - reject
+^https?:\/\/axxd\.xmseeyouyima\.com\/v\d\/getad - reject
+
+[Map Local]
+# 闲鱼 - 直接返回空 JSON（开屏广告、策略、推荐等）
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlecommerce\.splash\.ads\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.user\.strategy\.list\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.item\.recommend\.list\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.local\.near\.by\.corner\.info\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.item\.buy\.feeds\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsearch\.search\.shade\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.playboy\.recommend\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[Body Rewrite]
+# 闲鱼 - 首页信息流（保留金刚位和商品卡，去广告和banner）
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlehome\.home\.nextfresh\/ '.data.homeTopList |= map(select(.sectionType == "kingkongDo")) | .data.sections |= map(select(.data.clickParam.args.cardType as $ct | $ct != "homeMultiBanner" and $ct != "mamaAD")) | .data.sections |= map(select((.template.name|type=="string")and(.template.name=="idlefish_home_new_commodity_card"or(.template.name|contains("fish_home_tags_item_card")))))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlehome\.widget\.refresh\.get\/ '.data.homeTopList |= map(select(.sectionType == "kingkongDo"))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.home\.whale\.modulet\/ '.data.container.sections |= map(select(.template.name == "fish_home_miniapp"))'
+# 闲鱼 - 关注页去推荐
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.fun\.follow\.feed\.list\/ '.data.sections|=map(select(.cardType==2001))'
+# 闲鱼 - 社区/新品/本地去广告
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlehome\.home\.community\/ '.data.feedsList |= map(select(.template.name == "idlefish_home_new_commodity_card" or .template.name == "idlefish_home_new_content_card"))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlehome\.home\.newitem\.page\/ '.data.sections |= map(select(.data.clickParam.args.cardType as $ct | $ct != "banner" and $ct != "mamaAD"))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.local\.flow\.plat\.section\/ '.data.data.components |= map(select(.data and (.data|type=="object") and .data.template and (.data.template|type=="object") and .data.template.name and (.data.template.name|type=="string") and (.data.template.name|contains("fish_city_kingkong"))))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.local\.home\.top\/ '.data.data.components |= map(select(.key == "fish_home_second_stage_top_cardV3"))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.local\.home\/ '.data.sections |= map(select((.template.cardEnum != "ads") and (.cardType == "common")))'
+# 闲鱼 - 精简"我的"页面（保留核心工具）
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.idle\.user\.page\.my\.adapter\/ '.data.container.sections |= map(select(.template.name | test("^my_fy[0-9]+_(header|user_info|trade|appraise|tools)$"))) | .data.container.sections |= map(.item |= (if .level and .level.exContent and (.level.exContent | has("tips")) then del(.level) else . end))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.idle\.user\.page\.my\.adapter\/ '  .data.container.sections[] |= (   if .item.tool then     .item.tool.exContent.tools = [       [         {           "targetUrl": "https://h5.m.goofish.com/wow/moyu/moyu-project/fish-ad/pages/home?kun=true&fromScene=myPage",           "exContent": {             "title": "超级擦亮",             "icon": "https://gw.alicdn.com/imgextra/i2/O1CN01bVNpPu1eGbSDs0GSR_!!6000000003844-2-tps-84-84.png",             "toolId": 23           },           "clickParam": {             "args": {               "toolId": "23"             },             "arg1": "Function"           }         },         {           "targetUrl": "https://h5.m.goofish.com/wow/moyu/moyu-project/moyu-tb-resell/pages/newResell?isNeedRefresh=0&setTab=1",           "exContent": {             "title": "淘宝转卖",             "icon": "https://gw.alicdn.com/imgextra/i2/O1CN01JTbPcx1Qrn3n9w03n_!!6000000002030-2-tps-84-84.png",             "toolId": 11           },           "clickParam": {             "args": {               "toolId": "11"             },             "arg1": "Function"           }         },         {           "targetUrl": "https://h5.m.goofish.com/wow/moyu/moyu-project/experience-officer/pages/home?kun=true",           "exContent": {             "title": "闲鱼体验官",             "icon": "https://gw.alicdn.com/imgextra/i1/O1CN016leRFv1N0Fprgaghl_!!6000000001507-2-tps-84-84.png",             "toolId": 2           },           "clickParam": {             "args": {               "toolId": "2"             },             "arg1": "Function"           }         },         {           "targetUrl": "https://h5.m.goofish.com/wow/moyu/moyu-project/seafood-qa/pages/my-content?useCusFont=true&loadingVisible=false",           "exContent": {             "title": "帖子中心",             "icon": "https://gw.alicdn.com/imgextra/i1/O1CN01Cge0QO1R2K5RfoaOw_!!6000000002053-2-tps-84-84.png",             "toolId": 13           },           "clickParam": {             "args": {               "toolId": "13"             },             "arg1": "Function"           }         }       ],       [         {           "targetUrl": "https://h5.m.goofish.com/app/msd/buyer-aqcenter/index.html?source=316#/notice",           "exContent": {             "title": "闲鱼公约",             "icon": "https://img.alicdn.com/imgextra/i4/O1CN01A9ofQ51t1EOZfykDn_!!6000000005841-2-tps-84-84.png",             "toolId": 20           },           "clickParam": {             "args": {               "toolId": "20"             },             "arg1": "Function"           }         },         {           "targetUrl": "https://h5.m.goofish.com/wow/moyu/moyu-project/cro-security-center/pages/security-center",           "exContent": {             "title": "安全中心",             "icon": "https://gw.alicdn.com/imgextra/i4/O1CN013kllih1NlQd6e3sRv_!!6000000001610-2-tps-84-84.png",             "toolId": 1           },           "clickParam": {             "args": {               "toolId": "1"             },             "arg1": "Function"           }         }       ]     ]   else     .   end )'
+# 闲鱼 - 圈子去营销标签
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlehome\.home\.circle\.list\/ '.data.circleList[].showInfo.titleImage |= (.lightUrl="" | .url="" | del(.width, .height))'
+# 闲鱼 - 搜索页去广告
+http-response-jq ^https:\/\/g-acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsearch\.search\/ '.data.resultList |= map(if .data.item.main.exContent.dislikeFeedback.clickParam.args.bizType == "ad" then empty else . end)'
+http-response-jq ^https:\/\/g-acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsearch\.search\/ 'delpaths([["data","resultPrefixBar"]])'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsearch\.search\.discover\/ '.data.resultList |= map(select(.type != "MarketHotSpot"))'
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsearch\.item\.search\.activate\/ '.data.cardList |= map(if has("cardData") and (.cardData | has("hotwords")) then .cardData |= del(.hotwords) else . end)'
+# 闲鱼 - 订单页精简
+http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.trade\.full\.info\/ '.data.components |= map(select(.render | . == "orderStatusVO" or . == "addressInfoVO" or . == "orderInfoVO"))'
+http-response-jq ^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba.*mytab '.data.model.children |= map(select(.name | contains("营销") | not))'
+http-response-jq ^https?:\/\/api\.weibo\.cn\/\d\/ug\/checkin\/stream '.items |= map(select(.category != "card"))'
+http-response-jq ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/page\/.*conf\.do '.data |= del(.masterLoginGuideList, .masterOperatorList, .functionOperatorInfoList, .memberOperator, .activityTabInfoList, .extList)'
+
+[Script]
+
+# 哔哩哔哩去广告脚本（来自 Maasea/sgmodule）
+bilibili.helper.v2=type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/(splash|search\?|feed\/index),requires-body=1,max-size=-1,binary-body-mode=0,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.v2.js
+bilibili.helper.dmView=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.community\.service\.dm\.v1\.DM\/DmView,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+bilibili.helper.teenager=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.interface\.v1\.Teenagers\/ModeStatus,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+bilibili.helper.v1.view=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.(view|viewunite)\.v1\.View\/(View|ViewProgress)$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+bilibili.helper.mainList=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.main\.community\.reply\.v1\.Reply\/MainList,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+bilibili.helper.searchAll=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.polymer\.app\.search\.v1\.Search\/SearchAll$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+bilibili.helper.dynAll=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.dynamic\.v2\.Dynamic\/DynAll$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
+12306.js=type=http-request, pattern=^https?:\/\/ad\.12306\.cn\/ad\/ser\/getAdList, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/12306.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/faas\/amap-navigation\/main-page, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/message\/notice\/list, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/msgbox\/pull, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/promotion-web\/resource, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/shield\/dsp\/profile\/index\/nodefaas, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/shield\/frogserver\/aocs\/updatable, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/shield\/search\/nearbyrec_smart, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/shield\/search\/new_hotword, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amap.js=type=http-response, pattern=^https?:\/\/.*\.amap\.com\/ws\/valueadded\/alimama\/splash_screen, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amap.js, requires-body=true, max-size=-1, timeout=60
+amdc.js=type=http-response, pattern=^http:\/\/[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+){1,4}(:\d+)?\/amdc\/mobileDispatch, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js, requires-body=true, max-size=-1, timeout=60
+amdc.js=type=http-response, pattern=^http:\/\/amdc\.m\.taobao\.com, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/amdc.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/api\.caiyunapp\.com\/v\d\/activity, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/biz\.cyapi\.cn\/api\/v\d\/user_detail, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/biz\.cyapi\.cn\/v\d\/user, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/campaigns, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/config/cypage, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/notification/message_center, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/operation/banners, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/operation/features, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/operation/feeds, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/starplucker\.cyapi\.cn\/v\d/operation/homefeatures, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+caiyun_json.js=type=http-response, pattern=^https?:\/\/wrapper\.cyapi\.cn\/v\d\/activity, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/caiyun_json.js, requires-body=true, max-size=-1, timeout=60
+jd_json.js=type=http-response, pattern=^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=(hotWords|hotSearchTerms), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/jd_json.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/loading\/current, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/loading\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/batch, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/creator\/musician\/reminder\/message\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/delivery\/batch-deliver, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/delivery\/deliver, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ios\/upgrade\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/link\/home\/framework\/tab, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/link\/page\/discovery\/resource\/show, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/link\/page\/rcmd\/resource\/show, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/link\/position\/show\/resource, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/link\/scene\/show\/resource, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/chart\/detail, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/chart\/list, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/default\/keyword\/list, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/rcmd\/keyword\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/specialkeyword\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/search\/suggest\/keyword\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/side-bar\/mini-program\/music-service\/account, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vip\/cashier\/tspopup\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vipnewcenter\/app\/resource\/newaccountpage, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+netease.adblock.js=type=http-response, pattern=^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/yunbei\/account\/entrance\/get, script-path=https://gist.githubusercontent.com/ddgksf2013/4f53b7c6083678df25fecc8ff68b52c4/raw/netease.adblock.js, requires-body=true, max-size=-1, timeout=60
+startup.js=type=http-response, pattern=^https?:\/\/api\.m\.jd\.com\/api\?functionId=delivery_show, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/startup.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https://api.weibo.cn/2/!/client/light_skin, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https://new.vip.weibo.cn/littleskin/preview, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?://(sdk|wb)app\.uve\.weibo\.com(/interface/sdk/sdkad.php|/wbapplua/wbpullad.lua), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/api\.weibo\.cn\/\d\/\w{5}\/(statuses_unread_hot_timeline|timeline), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/api\.weibo\.cn\/\d\/groups\/allgroups\/v\d, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/api\.weibo\.cn\/\d\/statuses\/container_detail, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/api\.weibo\.cn\/\d\/video\/tiny_stream_mid_detail, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/boot.*weibo\.com\/v\d\/ad\/preload, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/(checkin/show|\!/live/media_homelist|container/get_item), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/(searchall|page\?|0flowpage), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/\w{5}\/cardlist, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/cardlist, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/groups/timeline, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/profile/(me|container_timeline), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/search/(finder|container_timeline|container_discover), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/statuses/(container_timeline|unread_hot_timeline|extend|video_mixtimeline|unread_topic_timeline), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/statuses/(unread_)?friends(/|_)timeline, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/video/(community_tab|remind_info|tiny_stream_video_list), script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php.*a=trends, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php.*get_coopen_ads, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.cn\/portal\.php\?a=open_app, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.cn\/portal\.php\?a=search_topic, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_json.js=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.cn\/portal\.php\?a=user_center, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_json.js, requires-body=true, max-size=-1, timeout=60
+weibo_search_info.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php.*a=get_searching_info, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_info.json, requires-body=true, max-size=-1, timeout=60
+weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php.*feed&a=search_topic, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/refs/heads/master/weibo_search_topic.json, requires-body=true, max-size=-1, timeout=60
+weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
+
+[MITM]
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, acs.m.goofish.com, g-acs.m.goofish.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com, capis*.didapinche.com, capis-slb.didapinche.com, as.xiaojukeji.com, ct.xiaojukeji.com, hd.xiaojukeji.com, res.xiaojukeji.com, www.didapinche.com, conf.diditaxi.com.cn, wallet.95516.com, tysdk.95516.com, ads.95516.com
