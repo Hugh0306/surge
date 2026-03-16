@@ -61,6 +61,12 @@ DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/config\/function\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/getRegConfig\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailoperating\/mailmaster\/api\/operator\/get - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/comment\/feed\/inserted\/resources - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/content\/activity\/music\/jar\/template\/list - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/resource-exposure\/config - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/sp\/flow\/popup\/query - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vipmall\/couponcfg\/get - reject
+^https?:\/\/interface(\d)?\.music\.163\.com\/w?eapi\/(resource-exposure\/)?activity - reject
 ^https?:\/\/boot.*weibo\.com\/v\d\/ad\/realtime - reject
 ^https?:\/\/cdn\.cmgadx\.com\/sdk\/pool\/\w+\.json - reject
 ^https?:\/\/client\.app\.coc\.10086\.cn\/biz-orange\/DN\/init\/startInit - reject
