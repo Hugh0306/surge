@@ -1,5 +1,5 @@
 #!name=去广告模块(精简版)
-#!desc=精简版去广告，包含：哔哩哔哩、微博、百度网盘、高德地图、小红书、网易云、彩云天气、闲鱼、12306、微信、京东、淘宝、拼多多、美团、中国移动、米家
+#!desc=精简版去广告，包含：哔哩哔哩、微博、百度网盘、高德地图、小红书、网易云、彩云天气、闲鱼、12306、微信、京东、淘宝、拼多多、美团、中国移动、联通、滴滴、哈啰、航旅纵横、WPS、猎聘、山姆、转转、安居客、米家
 #!category=🛡️ 去广告
 
 [General]
@@ -61,6 +61,27 @@ DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/config\/function\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/getRegConfig\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailoperating\/mailmaster\/api\/operator\/get - reject
+^https?:\/\/conf\.diditaxi\.com\.cn\/homepage\/v1\/core - reject
+^https?:\/\/gameapi\.hellobike\.com\/api - reject
+^https?:\/\/(discardrp|startup)\.umetrip\.com\/gateway\/api\/umetrip\/native - reject
+^https?:\/\/img\.umetrip\.com\/fs\/advert\/ - reject
+^https?:\/\/ios\.wps\.cn\/ad-statistics-service - reject
+^https?:\/\/m1\.ad\.10010\.com\/noticeMag\/images\/imageUpload\/2\d{3} - reject
+^https?:\/\/m\.client\.10010\.com\/mobileService\/(activity|customer)\/(accountListData|get_client_adv|get_startadv) - reject
+^https?:\/\/m\.client\.10010\.com\/uniAdmsInterface\/(getHomePageAd|getWelcomeAd) - reject
+^https?:\/\/api-ac\.liepin\.com\/api\/com\.liepin\.cyclops\.live\.get-ad-cards - reject
+^https?:\/\/api-wanda\.liepin\.com\/api\/com\.liepin\.cbp\.baizhong\.op\.v2-show-4app - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v1\/sams\/sams-user\/(window\/getGoUpPlus|screen_promotion\/get) - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/channel\/portal\/AdgroupData - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/configuration\/appVersionUpdate\/getAppVersionUpdateInfo - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/configuration\/personCenterEntrance\/query - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/goods-portal\/spu\/searchRecommendPool - reject
+^https?:\/\/api-sams\.walmartmobile\.cn\/api\/v\d\/sams\/trade\/order\/getOftenBuyGoods - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zz\/transfer\/userred\?scene=homePage - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zz\/v2\/zzlogic\/getOpenScreen - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zzopen\/popwindow\/getallpopwin\? - reject
+^https?:\/\/app\.zhuanzhuan\.com\/zzx\/transfer\/getConfigInfo$ - reject
+^https?:\/\/pic\d\.ajkimg\.com\/mat\/\w+\?imageMogr\d\/format\/jpg\/thumbnail\/\d{3}x\d{4}$ - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/comment\/feed\/inserted\/resources - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/content\/activity\/music\/jar\/template\/list - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/resource-exposure\/config - reject
@@ -185,4 +206,4 @@ weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.
 weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% *.api.weibo.*, *.uve.weibo.com, *.xiaohongshu.com, acs.m.goofish.com, acs.m.taobao.com, acs4miniapp-inner.m.taobao.com, ad.12306.cn, ad.cj.sina.cn, ad.mcloud.139.com, afd.baidu.com, amap-aos-info-nogw.amap.com, api.caiyunapp.com, api.jr.mi.com, api.m.jd.com, api.m.mi.com, api.smart.jd.com, api.weibo.*, api.weibo.cn, api.yangkeduo.com, app.bilibili.com, appconf.mail.163.com, appwk.baidu.com, bdsp-x.jd.com, boot.biz.weibo.com, cdn.cmgadx.com, center.amap.com, client.app.coc.10086.cn, client.mail.163.com, dsp-x.jd.com, flowplus.meituan.net, g-acs.m.goofish.com, gd.10086.cn, guide-acs.m.taobao.com, gx.10086.cn, home.mi.com, img.meituan.net, info.mina.mi.com, interface*.music.163.com, jdread-api.jd.com, lop-proxy.jd.com, m.sd.10086.cn, m5-zb.amap.com, m5.amap.com, mail.163.com, mapi.weibo.*, mapi.weibo.com, mi.gdt.qq.com, mime.baidu.com, mobads.baidu.com, ms.jr.jd.com, new.vip.weibo.cn, p*.meituan.net, pan.baidu.com, peisongapi.meituan.com, s3plus.meituan.net, shop-api.retail.mi.com, shopapi.io.mi.com, smsrebuild1.mail.10086.cn, t1.market.xiaomi.com, tiebac.baidu.com, tnc*-*.zijieapi.com, us.l.qq.com, wap.js.10086.cn, weixin110.qq.com, wmapi.meituan.com, www.meituan.com
+hostname = %APPEND% *.api.weibo.*, *.uve.weibo.com, *.xiaohongshu.com, acs.m.goofish.com, acs.m.taobao.com, acs4miniapp-inner.m.taobao.com, ad.12306.cn, ad.cj.sina.cn, ad.mcloud.139.com, afd.baidu.com, amap-aos-info-nogw.amap.com, api.caiyunapp.com, api.jr.mi.com, api.m.jd.com, api.m.mi.com, api.smart.jd.com, api.weibo.*, api.weibo.cn, api.yangkeduo.com, app.bilibili.com, appconf.mail.163.com, appwk.baidu.com, bdsp-x.jd.com, boot.biz.weibo.com, cdn.cmgadx.com, center.amap.com, client.app.coc.10086.cn, client.mail.163.com, dsp-x.jd.com, flowplus.meituan.net, g-acs.m.goofish.com, gd.10086.cn, guide-acs.m.taobao.com, gx.10086.cn, home.mi.com, img.meituan.net, info.mina.mi.com, interface*.music.163.com, jdread-api.jd.com, lop-proxy.jd.com, m.sd.10086.cn, m5-zb.amap.com, m5.amap.com, mail.163.com, mapi.weibo.*, mapi.weibo.com, mi.gdt.qq.com, mime.baidu.com, mobads.baidu.com, ms.jr.jd.com, new.vip.weibo.cn, p*.meituan.net, pan.baidu.com, peisongapi.meituan.com, s3plus.meituan.net, shop-api.retail.mi.com, shopapi.io.mi.com, smsrebuild1.mail.10086.cn, t1.market.xiaomi.com, tiebac.baidu.com, tnc*-*.zijieapi.com, us.l.qq.com, wap.js.10086.cn, weixin110.qq.com, wmapi.meituan.com, www.meituan.com, conf.diditaxi.com.cn, gameapi.hellobike.com, startup.umetrip.com, discardrp.umetrip.com, img.umetrip.com, ios.wps.cn, m1.ad.10010.com, m.client.10010.com, api-ac.liepin.com, api-wanda.liepin.com, api-sams.walmartmobile.cn, app.zhuanzhuan.com, pic*.ajkimg.com
