@@ -49,7 +49,7 @@ Promise.all([fetchData(IPAPI_URL), fetchData(IPPURE_URL)])
         pureLine = `纯净度：${s} ${tag}`;
       }
       if (pure.asn) asnLine = `ASN：${pure.asn} (${pure.asOrganization || ""})`;
-      nativeLine = `原生IP：${pure.isResidential ? "Yes" : "No"}`;
+      nativeLine = `原生IP：${pure.isResidential ? "🟢 Yes" : "🔴 No"}`;
     } catch (e) {}
 
     const lines = [
