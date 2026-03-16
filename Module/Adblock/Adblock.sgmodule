@@ -138,10 +138,9 @@ IP-CIDR,203.107.33.92/32,REJECT,no-resolve
 ^https?:\/\/weibointl\.api\.weibo\.c(n|om)\/portal\.php\?a=hot_search_users - reject
 https?:\/\/m\.sd\.10086\.cn\/zapi\/app_common\/homeWelcome\/welcome.do - reject
 
-# 懂车帝开屏广告
+# 懂车帝开屏广告（改用脚本处理，避免请求失败触发备用广告）
+# 广告素材仍用 reject（不需要脚本处理的静态资源）
 ^https?:\/\/lf.*\.dongchedi\.com\/obj\/ad-tetris-site\/ - reject
-^https?:\/\/.*\.dongchedi\.com\/api\/ad\/ - reject
-^https?:\/\/.*\.snssdk\.com\/api\/ad\/ - reject
 # 穿山甲广告 SDK（全域名拦截，覆盖 get_ads/stats/batch 等所有路径）
 ^https?:\/\/api-access\.pangolin-sdk-toutiao1?\.com\/ - reject
 ^https?:\/\/ether-pack\.pangolin-sdk-toutiao\.com\/ - reject
@@ -184,6 +183,10 @@ http-response-jq ^https?:\/\/api\.weibo\.cn\/\d\/ug\/checkin\/stream '.items |= 
 http-response-jq ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/page\/.*conf\.do '.data |= del(.masterLoginGuideList, .masterOperatorList, .functionOperatorInfoList, .memberOperator, .activityTabInfoList, .extList)'
 
 [Script]
+# 懂车帝去开屏广告（脚本方式：修改响应返回空广告数据）
+dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dongchedi\.com\/(api\/ad\/|service\/\d\/app_config), script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
+dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.snssdk\.com\/api\/ad\/, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
+
 # 哔哩哔哩去广告脚本（来自 Maasea/sgmodule）
 bilibili.helper.v2=type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/(splash|search\?|feed\/index),requires-body=1,max-size=-1,binary-body-mode=0,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.v2.js
 bilibili.helper.dmView=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.community\.service\.dm\.v1\.DM\/DmView,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.js
