@@ -12,7 +12,6 @@ try {
   if (!log || log.length === 0) {
     result = "暂无抓包记录，请先开启 AdTracker 模块";
   } else {
-    // 按域名聚合
     var dm = {};
     var i, item, domain, m, path, t;
 
@@ -24,7 +23,7 @@ try {
         if (m) domain = m[1];
       } catch (e) {}
 
-      if (!dm[domain]) dm[domain] = { c: 0, t: {}, p: {}, last: "" };
+      if (!dm[domain]) dm[domain] = { c: 0, t: {}, p: {}, last: "", d: domain };
       dm[domain].c++;
 
       if (item.tags) {
@@ -43,22 +42,19 @@ try {
       if (item.time) dm[domain].last = item.time;
     }
 
-    // 排序
     var arr = [];
     for (var d in dm) {
       if (dm.hasOwnProperty(d)) arr.push(dm[d]);
-      dm[d].d = d;
     }
     arr.sort(function (a, b) { return b.c - a.c; });
 
-    // 过滤掉去广告脚本自身的请求（误报）
+    // 过滤误报
     var filtered = [];
     for (i = 0; i < arr.length; i++) {
       if (arr[i].d === "raw.githubusercontent.com") continue;
       filtered.push(arr[i]);
     }
 
-    // 输出
     result = "AdTracker 抓包报告\n";
     result += "共 " + log.length + " 条 / " + filtered.length + " 个域名\n";
     result += "────────────────────\n\n";
@@ -82,22 +78,18 @@ try {
       result += "\n";
     }
 
-    // 生成可直接使用的 Surge 规则建议
     result += "────────────────────\n";
-    result += "Surge 规则建议 (仅供参考)\n\n";
+    result += "Surge 规则建议\n\n";
 
     for (i = 0; i < filtered.length; i++) {
       var f = filtered[i];
-      var fd = f.d;
-      // 纯广告域名 → DOMAIN REJECT
-      if (/^ads?\./i.test(fd) || /adservice|admob|pangolin|pglstatp/i.test(fd)) {
-        result += "DOMAIN," + fd + ",REJECT\n";
+      if (/^ads?\./i.test(f.d) || /adservice|admob|pangolin|pglstatp/i.test(f.d)) {
+        result += "DOMAIN," + f.d + ",REJECT\n";
       }
     }
-    result += "\n";
   }
 } catch (err) {
   result = "脚本错误: " + err.message;
 }
 
-$done(result);
+$done({title: "AdTracker", htmlMessage: "<pre>" + result + "</pre>"});
