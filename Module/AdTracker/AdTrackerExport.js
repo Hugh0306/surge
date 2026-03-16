@@ -1,11 +1,8 @@
 /**
- * 广告抓包记录 - 导出规则生成器
+ * 广告抓包记录 - 导出详情 + 规则建议
  *
- * 使用方法：在 Surge 中通过「脚本」手动运行此脚本
- * 功能：读取已记录的广告请求，按域名聚合后生成 Surge 拦截规则建议
- *
- * 配置方式：Surge → 脚本 → 创建脚本 → 类型选 cron / 手动运行
- * 或在模块中添加 cron 定时触发
+ * 使用方法：Surge → 脚本列表 → 手动运行 AdTrackerExport
+ * 输出：通过多条通知分段发送，可从通知中心长按复制
  */
 
 const STORE_KEY = "ad_tracker_log";
@@ -13,13 +10,13 @@ const STORE_KEY = "ad_tracker_log";
 let log = [];
 try {
   log = JSON.parse($persistentStore.read(STORE_KEY) || "[]");
-} catch(e) {
-  $notification.post("导出失败", "", "无法读取记录数据: " + e.message);
+} catch (e) {
+  $notification.post("导出失败", "", "数据解析错误: " + e.message);
   $done();
 }
 
 if (log.length === 0) {
-  $notification.post("广告规则导出", "暂无记录", "请先使用 AdTracker 模块抓包");
+  $notification.post("广告抓包导出", "暂无记录", "请先使用 AdTracker 模块抓包");
   $done();
 }
 
@@ -29,77 +26,98 @@ for (const item of log) {
   let domain = "";
   try {
     domain = item.url.match(/^https?:\/\/([^\/]+)/i)?.[1] || "unknown";
-  } catch(e) { continue; }
+  } catch (e) { continue; }
 
   if (!domainMap[domain]) {
     domainMap[domain] = { count: 0, tags: new Set(), paths: new Set(), fulls: [] };
   }
   domainMap[domain].count++;
   item.tags.forEach(t => domainMap[domain].tags.add(t));
-
-  // 提取路径部分
   try {
     const path = item.url.replace(/^https?:\/\/[^\/]+/, "").split("?")[0];
     if (path) domainMap[domain].paths.add(path);
-  } catch(e) {}
-
+  } catch (e) {}
   if (domainMap[domain].fulls.length < 5) {
     domainMap[domain].fulls.push(item.full || item.url);
   }
 }
 
-// 按命中次数排序
-const sorted = Object.entries(domainMap)
-  .sort((a, b) => b[1].count - a[1].count);
+const sorted = Object.entries(domainMap).sort((a, b) => b[1].count - a[1].count);
 
-// ============ 生成规则 ============
+// ===== 通知 1: 域名 + 路径详情（可复制分析） =====
+let detail = "";
+for (const [domain, info] of sorted) {
+  detail += `${domain} x${info.count} [${[...info.tags].join(",")}]\n`;
+  for (const p of [...info.paths].slice(0, 5)) {
+    detail += `  ${p}\n`;
+  }
+  detail += "\n";
+}
 
-let urlRewriteRules = [];
-let domainRules = [];
+const detailChunks = splitText(detail, 800);
+detailChunks.forEach((chunk, i) => {
+  $notification.post(
+    `抓包详情 (${i + 1}/${detailChunks.length})`,
+    `${log.length}条记录 / ${sorted.length}域名 — 长按复制`,
+    chunk
+  );
+});
+
+// ===== 通知 2: 生成 Surge 规则建议 =====
+let rules = "";
 let mitmHosts = new Set();
 
 for (const [domain, info] of sorted) {
-  const tagsStr = [...info.tags].join(", ");
   const paths = [...info.paths];
 
-  // 策略1：如果域名本身就是广告域名（ad. 开头或含广告平台标识），直接拦截域名
   if (/^ads?\./i.test(domain) || /adservice|admob|pangolin|pglstatp/i.test(domain)) {
-    domainRules.push(`# ${domain} (×${info.count}) [${tagsStr}]`);
-    domainRules.push(`DOMAIN,${domain},REJECT`);
+    rules += `DOMAIN,${domain},REJECT\n`;
     continue;
   }
 
-  // 策略2：如果路径有明显广告特征，生成 URL Rewrite 规则
-  if (paths.length > 0) {
-    // 如果路径种类少(≤3)，为每个路径生成精确规则
-    if (paths.length <= 3) {
-      for (const path of paths) {
-        // 转义正则特殊字符
-        const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const escapedDomain = domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        urlRewriteRules.push(`# [${tagsStr}] ×${info.count}`);
-        urlRewriteRules.push(`^https?:\\/\\/${escapedDomain}${escapedPath} - reject`);
-      }
-    } else {
-      // 路径种类多，找共同前缀
-      const commonPrefix = findCommonPrefix(paths);
-      if (commonPrefix.length > 1) {
-        const escapedDomain = domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const escapedPrefix = commonPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        urlRewriteRules.push(`# [${tagsStr}] ×${info.count} (${paths.length}种路径)`);
-        urlRewriteRules.push(`^https?:\\/\\/${escapedDomain}${escapedPrefix} - reject`);
-      } else {
-        // 无共同前缀，列出样本供人工判断
-        urlRewriteRules.push(`# ⚠️ 需人工确认: ${domain} (×${info.count}) [${tagsStr}]`);
-        urlRewriteRules.push(`# 样本路径:`);
-        for (const p of paths.slice(0, 3)) {
-          urlRewriteRules.push(`#   ${p}`);
-        }
-      }
+  if (paths.length > 0 && paths.length <= 3) {
+    for (const path of paths) {
+      const ed = domain.replace(/\./g, "\\.");
+      const ep = path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      rules += `^https?:\\/\\/${ed}${ep} - reject\n`;
     }
-
-    mitmHosts.add(domain);
+  } else if (paths.length > 3) {
+    const prefix = findCommonPrefix(paths);
+    if (prefix.length > 1) {
+      const ed = domain.replace(/\./g, "\\.");
+      const ep = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      rules += `^https?:\\/\\/${ed}${ep} - reject\n`;
+    } else {
+      rules += `# ${domain} x${info.count} (需人工确认)\n`;
+    }
   }
+  mitmHosts.add(domain);
+}
+
+if (mitmHosts.size > 0) {
+  rules += `\nhostname = %APPEND% ${[...mitmHosts].join(", ")}\n`;
+}
+
+const ruleChunks = splitText(rules, 800);
+ruleChunks.forEach((chunk, i) => {
+  $notification.post(
+    `规则建议 (${i + 1}/${ruleChunks.length})`,
+    "仅供参考 — 长按复制",
+    chunk
+  );
+});
+
+// 写入持久化存储备用
+$persistentStore.write(detail + "\n---RULES---\n" + rules, "ad_tracker_export");
+
+$done();
+
+function splitText(text, maxLen) {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += maxLen) {
+    chunks.push(text.substring(i, i + maxLen));
+  }
+  return chunks.length > 0 ? chunks : [""];
 }
 
 function findCommonPrefix(paths) {
@@ -113,38 +131,3 @@ function findCommonPrefix(paths) {
   }
   return prefix;
 }
-
-// ============ 输出 ============
-
-let output = "# ===== 自动生成的 Surge 拦截规则建议 =====\n";
-output += `# 生成时间: ${new Date().toLocaleString("zh-CN")}\n`;
-output += `# 基于 ${log.length} 条抓包记录\n`;
-output += `# ⚠️ 请人工审核后再使用，避免误拦正常请求\n\n`;
-
-if (domainRules.length > 0) {
-  output += "[Rule]\n";
-  output += domainRules.join("\n") + "\n\n";
-}
-
-if (urlRewriteRules.length > 0) {
-  output += "[URL Rewrite]\n";
-  output += urlRewriteRules.join("\n") + "\n\n";
-}
-
-if (mitmHosts.size > 0) {
-  output += "[MITM]\n";
-  output += "hostname = %APPEND% " + [...mitmHosts].join(", ") + "\n";
-}
-
-// 通知输出（截断以适应通知长度）
-const notifBody = output.length > 800 ? output.substring(0, 800) + "\n...(已截断)" : output;
-$notification.post(
-  "广告规则导出完成",
-  `共分析 ${sorted.length} 个域名，生成 ${domainRules.filter(r => !r.startsWith("#")).length + urlRewriteRules.filter(r => !r.startsWith("#")).length} 条规则`,
-  notifBody
-);
-
-// 同时写入持久化存储，方便外部读取
-$persistentStore.write(output, "ad_tracker_rules");
-
-$done();
