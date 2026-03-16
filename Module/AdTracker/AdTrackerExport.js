@@ -15,7 +15,7 @@ try {
 
 if (log.length === 0) {
   $notification.post("AdTracker", "暂无记录", "请先抓包");
-  $done({});
+  $done("暂无记录，请先使用 AdTracker 模块抓包");
 } else {
   // 按域名聚合（不用 Set，用普通对象）
   var dm = {};
@@ -82,5 +82,7 @@ if (log.length === 0) {
   }
 
   $persistentStore.write(text, "ad_tracker_export");
-  $done({});
+  // 截取前2000字符显示在脚本结果界面
+  var preview = text.length > 2000 ? text.substring(0, 2000) + "\n...(已截断)" : text;
+  $done(preview);
 }

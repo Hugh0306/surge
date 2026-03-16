@@ -85,8 +85,26 @@ IP-CIDR,203.107.33.92/32,REJECT,no-resolve
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/config\/function\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/getRegConfig\.do - reject
 ^https?:\/\/appconf\.mail\.163\.com\/mailoperating\/mailmaster\/api\/operator\/get - reject
+# 滴滴出行（完善规则，参考 blackmatrix7）
 ^https?:\/\/conf\.diditaxi\.com\.cn\/homepage\/v1\/core - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/boot\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/event\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/ad\/ride\/detail\? - reject
+^https?:\/\/capis(-?\w*)?\.didapinche\.com\/publish\/api\/upgrade - reject
+^https?:\/\/capis(-\d)?\.didapinche\.com\/ad\/ - reject
+^https?:\/\/capis-slb\.didapinche\.com\/ad\/ - reject
+^https?:\/\/as\.xiaojukeji\.com\/ep\/as\/conf\?ns=daijia-front - reject
+^https?:\/\/ct\.xiaojukeji\.com\/agent\/v3\/feeds - reject
+^https?:\/\/hd\.xiaojukeji\.com\/d - reject
+^https?:\/\/pt-starimg\.didistatic\.com\/static\/starimg\/node\/.*\.(jpg|png|gif) - reject
+^https?:\/\/res\.xiaojukeji\.com\/resapi\/activity\/get(Ruled|Preload|PasMultiNotices) - reject
+^https?:\/\/res\.xiaojukeji\.com\/resapi\/activity\/mget - reject
+^https?:\/\/www\.didapinche\.com\/app\/adstat\/ - reject
+# 哈啰出行
 ^https?:\/\/gameapi\.hellobike\.com\/api - reject
+# 云闪付
+^https?:\/\/wallet\.95516\.com\/s\/wl\/icon\/long - reject
+^https?:\/\/(tysdk|ads)\.95516\.com - reject
 ^https?:\/\/(discardrp|startup)\.umetrip\.com\/gateway\/api\/umetrip\/native - reject
 ^https?:\/\/img\.umetrip\.com\/fs\/advert\/ - reject
 ^https?:\/\/ios\.wps\.cn\/ad-statistics-service - reject
@@ -269,4 +287,4 @@ weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.
 weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com, capis*.didapinche.com, capis-slb.didapinche.com, as.xiaojukeji.com, ct.xiaojukeji.com, hd.xiaojukeji.com, res.xiaojukeji.com, www.didapinche.com, conf.diditaxi.com.cn, wallet.95516.com, tysdk.95516.com, ads.95516.com

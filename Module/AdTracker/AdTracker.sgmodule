@@ -3,7 +3,7 @@
 #!category=🔍 开发工具
 
 [Panel]
-AdTracker = script-name=AdTrackerPanel, title="广告抓包记录", content="点击刷新查看记录", style=info, update-interval=-1
+AdTracker = script-name=AdTrackerPanel, title="广告抓包记录", content="加载中…", style=info, update-interval=60
 
 [Script]
 # 记录器：捕获所有经过的 HTTP(S) 请求，匹配广告特征后记录
