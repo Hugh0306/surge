@@ -10,10 +10,10 @@ DOMAIN,adstrategy.biz.weibo.com,REJECT
 DOMAIN,sdkapp.uve.weibo.com,DIRECT
 DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 DOMAIN,cm.bilibili.com,REJECT
-DOMAIN,ab.seeyouyima.com,REJECT
-DOMAIN,ad.seeyouyima.com,REJECT
-DOMAIN,ad-logs.seeyouyima.com,REJECT
-DOMAIN,ztoken.uyunad.com,REJECT
+# 美柚广告域名 - 使用 DOMAIN-SUFFIX 提高优先级
+DOMAIN-SUFFIX,seeyouyima.com,REJECT
+DOMAIN-SUFFIX,xmseeyouyima.com,REJECT
+DOMAIN-SUFFIX,uyunad.com,REJECT
 
 [URL Rewrite]
 ^http:\/\/s3plus\.meituan\.net\/.*\/brandcpt-vedio\/.*\?time - reject
