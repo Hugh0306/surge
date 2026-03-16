@@ -9,7 +9,15 @@ DOMAIN,ad.12306.cn,DIRECT
 DOMAIN,adstrategy.biz.weibo.com,REJECT
 DOMAIN,sdkapp.uve.weibo.com,DIRECT
 DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
+# 哔哩哔哩广告域名
 DOMAIN,cm.bilibili.com,REJECT
+# 中国移动广告域名 - 提高优先级，只拦截已知广告域名
+DOMAIN,client.app.coc.10086.cn,REJECT
+DOMAIN,h.app.coc.10086.cn,REJECT
+DOMAIN,res.app.coc.10086.cn,REJECT
+DOMAIN,res.coc.10086.cn,REJECT
+DOMAIN,clientaccess.10086.cn,REJECT
+DOMAIN,mcmm.caiyun.feixin.10086.cn,REJECT
 # 美柚广告域名 - 只拦截已知广告域名，避免误杀图片资源
 DOMAIN,ad.seeyouyima.com,REJECT
 DOMAIN,ab.seeyouyima.com,REJECT
