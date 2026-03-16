@@ -1,133 +1,86 @@
-/**
- * 广告抓包记录 - 导出详情 + 规则建议
- *
- * 使用方法：Surge → 脚本列表 → 手动运行 AdTrackerExport
- * 输出：通过多条通知分段发送，可从通知中心长按复制
+/*
+ * AdTracker 导出 - 手动运行
+ * 通知发送抓包记录，长按通知可复制
  */
 
-(function () {
-  const STORE_KEY = "ad_tracker_log";
+var STORE_KEY = "ad_tracker_log";
+var raw = $persistentStore.read(STORE_KEY);
+var log = [];
 
-  let log = [];
-  try {
-    log = JSON.parse($persistentStore.read(STORE_KEY) || "[]");
-  } catch (e) {
-    $notification.post("导出失败", "", "数据解析错误: " + e.message);
-    return $done({});
-  }
+try {
+  log = JSON.parse(raw || "[]");
+} catch (e) {
+  log = [];
+}
 
-  if (log.length === 0) {
-    $notification.post("广告抓包导出", "暂无记录", "请先使用 AdTracker 模块抓包");
-    return $done({});
-  }
-
-  // 按域名聚合
-  const domainMap = {};
-  for (const item of log) {
-    let domain = "";
+if (log.length === 0) {
+  $notification.post("AdTracker", "暂无记录", "请先抓包");
+  $done({});
+} else {
+  // 按域名聚合（不用 Set，用普通对象）
+  var dm = {};
+  for (var i = 0; i < log.length; i++) {
+    var item = log[i];
+    var domain = "unknown";
     try {
-      domain = item.url.match(/^https?:\/\/([^\/]+)/i)?.[1] || "unknown";
-    } catch (e) { continue; }
+      var m = item.url.match(/^https?:\/\/([^\/]+)/i);
+      if (m) domain = m[1];
+    } catch (e) {}
 
-    if (!domainMap[domain]) {
-      domainMap[domain] = { count: 0, tags: new Set(), paths: new Set() };
+    if (!dm[domain]) {
+      dm[domain] = { count: 0, tags: {}, paths: {} };
     }
-    domainMap[domain].count++;
-    item.tags.forEach(t => domainMap[domain].tags.add(t));
+    dm[domain].count++;
+
+    // tags 去重
+    if (item.tags) {
+      for (var t = 0; t < item.tags.length; t++) {
+        dm[domain].tags[item.tags[t]] = 1;
+      }
+    }
+
+    // paths 去重，最多5个
     try {
-      const path = item.url.replace(/^https?:\/\/[^\/]+/, "").split("?")[0];
-      if (path) domainMap[domain].paths.add(path);
+      var path = item.url.replace(/^https?:\/\/[^\/]+/, "").split("?")[0];
+      if (path && Object.keys(dm[domain].paths).length < 5) {
+        dm[domain].paths[path] = 1;
+      }
     } catch (e) {}
   }
 
-  const sorted = Object.entries(domainMap).sort((a, b) => b[1].count - a[1].count);
+  // 排序
+  var entries = [];
+  for (var d in dm) {
+    entries.push([d, dm[d]]);
+  }
+  entries.sort(function (a, b) { return b[1].count - a[1].count; });
 
-  // ===== 通知: 域名 + 路径详情（可复制） =====
-  let detail = `${log.length}条记录 / ${sorted.length}个域名\n\n`;
-  for (const [domain, info] of sorted) {
-    detail += `${domain} x${info.count} [${[...info.tags].join(",")}]\n`;
-    for (const p of [...info.paths].slice(0, 5)) {
-      detail += `  ${p}\n`;
+  // 构建文本
+  var text = log.length + "条 / " + entries.length + "域名\n\n";
+  for (var j = 0; j < entries.length; j++) {
+    var dn = entries[j][0];
+    var info = entries[j][1];
+    var tags = Object.keys(info.tags).join(",");
+    var paths = Object.keys(info.paths);
+    text += dn + " x" + info.count + " [" + tags + "]\n";
+    for (var k = 0; k < paths.length; k++) {
+      text += "  " + paths[k] + "\n";
     }
-    detail += "\n";
+    text += "\n";
   }
 
-  // 分段发送通知
-  const chunks = splitText(detail, 800);
-  chunks.forEach((chunk, i) => {
+  // 分段发通知（每段800字）
+  var partNum = 1;
+  for (var pos = 0; pos < text.length; pos += 800) {
+    var chunk = text.substring(pos, pos + 800);
     $notification.post(
-      `抓包详情 (${i + 1}/${chunks.length})`,
-      `长按通知可复制`,
+      "抓包导出(" + partNum + ")",
+      "长按可复制",
       chunk
     );
-  });
-
-  // ===== 生成 Surge 规则建议 =====
-  let rules = "# 规则建议\n";
-  let mitmHosts = [];
-
-  for (const [domain, info] of sorted) {
-    const paths = [...info.paths];
-
-    if (/^ads?\./i.test(domain) || /adservice|admob|pangolin|pglstatp/i.test(domain)) {
-      rules += `DOMAIN,${domain},REJECT\n`;
-      continue;
-    }
-
-    if (paths.length > 0 && paths.length <= 3) {
-      for (const path of paths) {
-        const ed = domain.replace(/\./g, "\\.");
-        const ep = path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        rules += `^https?:\\/\\/${ed}${ep} - reject\n`;
-      }
-    } else if (paths.length > 3) {
-      const prefix = findCommonPrefix(paths);
-      if (prefix.length > 1) {
-        const ed = domain.replace(/\./g, "\\.");
-        const ep = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        rules += `^https?:\\/\\/${ed}${ep} - reject\n`;
-      } else {
-        rules += `# ${domain} x${info.count} (需人工确认)\n`;
-      }
-    }
-    mitmHosts.push(domain);
+    partNum++;
   }
 
-  if (mitmHosts.length > 0) {
-    rules += `\nhostname = %APPEND% ${mitmHosts.slice(0, 20).join(", ")}\n`;
-  }
-
-  const ruleChunks = splitText(rules, 800);
-  ruleChunks.forEach((chunk, i) => {
-    $notification.post(
-      `规则建议 (${i + 1}/${ruleChunks.length})`,
-      "仅供参考",
-      chunk
-    );
-  });
-
-  // 写入持久化存储
-  $persistentStore.write(detail + "\n---RULES---\n" + rules, "ad_tracker_export");
-
-  return $done({});
-
-  function splitText(text, maxLen) {
-    const chunks = [];
-    for (let i = 0; i < text.length; i += maxLen) {
-      chunks.push(text.substring(i, i + maxLen));
-    }
-    return chunks.length > 0 ? chunks : [""];
-  }
-
-  function findCommonPrefix(paths) {
-    if (paths.length === 0) return "";
-    let prefix = paths[0];
-    for (let i = 1; i < paths.length; i++) {
-      while (paths[i].indexOf(prefix) !== 0) {
-        prefix = prefix.substring(0, prefix.length - 1);
-        if (prefix === "") return "";
-      }
-    }
-    return prefix;
-  }
-})();
+  $persistentStore.write(text, "ad_tracker_export");
+  $done({});
+}

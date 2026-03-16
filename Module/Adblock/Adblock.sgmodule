@@ -184,11 +184,6 @@ http-response-jq ^https?:\/\/api\.weibo\.cn\/\d\/ug\/checkin\/stream '.items |= 
 http-response-jq ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/page\/.*conf\.do '.data |= del(.masterLoginGuideList, .masterOperatorList, .functionOperatorInfoList, .memberOperator, .activityTabInfoList, .extList)'
 
 [Script]
-# 懂车帝去开屏广告（真实 API 域名: dcarapi.com，非 dongchedi.com）
-dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dcarapi\.com\/motor\/ad\/, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
-dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dcarapi\.com\/motor\/brand\/.*\/launch, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
-dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.dongchedi\.com\/(api\/ad\/|service\/\d\/app_config), script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
-dongchedi.js=type=http-response, pattern=^https?:\/\/.*\.snssdk\.com\/api\/ad\/, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Adblock/dongchedi.js, requires-body=true, max-size=-1, timeout=60
 
 # 哔哩哔哩去广告脚本（来自 Maasea/sgmodule）
 bilibili.helper.v2=type=http-response,pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/(splash|search\?|feed\/index),requires-body=1,max-size=-1,binary-body-mode=0,script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/Script/Bilibili/bilibili.helper.v2.js
@@ -274,4 +269,4 @@ weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.
 weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, lf*.dongchedi.com, api*-normal-sinfonlinea.dcarapi.com, api*-*-sinfonlinea.dcarapi.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, boot.biz.weibo.com, kadmimage.biz.weibo.com
