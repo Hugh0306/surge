@@ -12,11 +12,11 @@ AdTrackerLog = type=http-request, pattern=^https?://.+, script-path=https://raw.
 # 面板：展示抓包记录摘要
 AdTrackerPanel = type=generic, timeout=15, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/AdTracker/AdTrackerPanel.js
 
-# 导出报告：在 Surge 脚本列表中手动运行（本地文件，方便即时更新）
-AdTrackerExport = type=cron, cronexp="0 0 1 1 *", timeout=30, script-path=AdTrackerExport.js
+# 导出报告：长按脚本运行，点击通知复制到剪贴板
+AdTrackerExport = type=cron, cronexp="0 0 1 1 *", timeout=30, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/AdTracker/AdTrackerExport.js
 
-# 清空记录：在 Surge 脚本列表中手动运行（本地文件）
-AdTrackerClear = type=cron, cronexp="0 0 1 1 *", timeout=10, script-path=AdTrackerClear.js
+# 清空记录：长按脚本运行
+AdTrackerClear = type=cron, cronexp="0 0 1 1 *", timeout=10, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/AdTracker/AdTrackerClear.js
 
 [MITM]
 hostname = %APPEND% *
