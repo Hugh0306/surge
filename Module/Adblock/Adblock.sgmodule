@@ -7,8 +7,6 @@
 [Rule]
 DOMAIN,ad.12306.cn,DIRECT
 DOMAIN,adstrategy.biz.weibo.com,REJECT
-DOMAIN,kadmimage.biz.weibo.com,REJECT
-DOMAIN,bootpreload.uve.weibo.com,REJECT
 DOMAIN,sdkapp.uve.weibo.com,DIRECT
 DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
 # 哔哩哔哩广告域名（集成 Maasea/sgmodule 规则）
@@ -270,4 +268,4 @@ weibo_search_topic.json=type=http-response, pattern=^https?:\/\/weibointl\.api\.
 weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wechat)\.com\/cgi-bin\/mmspamsupport-bin\/newredirectconfirmcgi\?, script-path=https://raw.githubusercontent.com/ddgksf2013/Scripts/master/weixin110.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.dongchedi.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, kadmimage.biz.weibo.com, bootpreload.uve.weibo.com
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.dongchedi.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com
