@@ -6,4 +6,4 @@
 IPPure = script-name=IPPure, title="IP 纯净度", content="请刷新面板", style=info, update-interval=1
 
 [Script]
-IPPure = type=generic, timeout=10, script-path=IPPure.js
+IPPure = type=generic, timeout=10, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Module/Panel/IPPure/IPPure.js
