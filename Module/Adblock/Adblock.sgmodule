@@ -9,6 +9,7 @@ DOMAIN,ad.12306.cn,DIRECT
 DOMAIN,adstrategy.biz.weibo.com,REJECT
 DOMAIN,sdkapp.uve.weibo.com,DIRECT
 DOMAIN-SUFFIX,optimus-ads.amap.com,DIRECT
+DOMAIN,cm.bilibili.com,REJECT
 
 [URL Rewrite]
 ^http:\/\/s3plus\.meituan\.net\/.*\/brandcpt-vedio\/.*\?time - reject
