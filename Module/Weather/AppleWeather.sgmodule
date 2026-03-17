@@ -1,0 +1,35 @@
+#!name=Apple 天气增强
+#!desc=解锁 Apple Weather 完整功能，优化天气数据显示。注意：此模块需要配合 iRingo 项目的脚本使用，请访问 https://github.com/VirgilClyne/iRingo 获取完整配置。
+#!category=🌤 功能增强
+#!author=VirgilClyne, WordlessEcho, 001
+#!homepage=https://github.com/VirgilClyne/iRingo
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Weather.png
+
+[General]
+# 强制使用 HTTP 引擎处理天气请求
+force-http-engine-hosts = %APPEND% weather-data.apple.com, api.weather.com
+
+[Rule]
+# Apple Weather 相关域名直连
+DOMAIN,weather-analytics-events.apple.com,DIRECT
+DOMAIN,weather-data.apple.com,DIRECT
+DOMAIN-SUFFIX,weather.com,DIRECT
+DOMAIN-SUFFIX,weatherkit.apple.com,DIRECT
+
+[URL Rewrite]
+# 优化天气 API 请求
+^https?:\/\/weather-data\.apple\.com\/v1\/ https://weather-data.apple.com/v2/ 302
+
+[MITM]
+hostname = %APPEND% weather-data.apple.com, weather-analytics-events.apple.com
+
+# ========================================
+# 使用说明：
+# ========================================
+# 1. 此模块为基础配置，主要功能需要配合 iRingo 项目的 JavaScript 脚本
+# 2. 完整功能请访问：https://github.com/VirgilClyne/iRingo
+# 3. 如需完整的天气增强功能，建议：
+#    - 访问 iRingo 项目获取最新的脚本文件
+#    - 或使用 Loon/Quantumult X 等支持完整脚本的工具
+# 4. 当前配置已包含基础的域名优化和 MITM 设置
+# ========================================
