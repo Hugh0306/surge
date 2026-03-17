@@ -489,6 +489,17 @@ URL-REGEX,"^http:\/\/\[[0-9a-fA-F:]+\]:\d+\/httpdns\/",REJECT,extended-matching
 ^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/user\/teenager\/status - reject
 ^https?:\/\/[a-z]+\.xiaohongshu\.com\/data\/native\/matrix_switches - reject
 ^https?:\/\/[a-z]+\.xiaohongshu\.com\/v\d+\/stateReport - reject
+# 小红书 - 补充规则（来自墨鱼版本）
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/homefeed\/categories - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/note\/feed\? - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/note\/imagefeed - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/note\/tabfeed - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/note\/videofeed\? - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/note\/widgets - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/search\/hint - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/search\/hot_list - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/search\/notes\? - reject
+^https?:\/\/[a-z]+\.xiaohongshu\.com\/api\/sns\/v\d+\/search\/trending - reject
 ^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.advertisementservice\.getadv\/ - reject
 ^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.aicloud\.splash - reject
 ^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.cbu\.app\.homepage\.startup - reject
@@ -661,6 +672,16 @@ http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idlemtopsear
 http-response-jq ^https:\/\/acs\.m\.goofish\.com\/gw\/mtop\.taobao\.idle\.trade\.full\.info\/ '.data.components |= map(select(.render | . == "orderStatusVO" or . == "addressInfoVO" or . == "orderInfoVO"))'
 http-response-jq ^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba.*mytab '.data.model.children |= map(select(.name | contains("营销") | not))'
 http-response-jq ^https?:\/\/api\.weibo\.cn\/\d\/ug\/checkin\/stream '.items |= map(select(.category != "card"))'
+# 微博 - 信息流去广告（增强版，来自墨鱼规则）
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/(searchall|page\?|0flowpage) '.cards |= map(select(.card_type != 11))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/\w{5}\/cardlist '.cards |= map(select(.card_type != 11))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/cardlist '.cards |= map(select(.card_type != 11))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/groups/timeline '.items |= map(select(.category != "card"))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/profile\/(me|container_timeline) '.items |= map(select(.category != "card"))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/search\/(finder|container_timeline|container_discover) '.cards |= map(select(.card_type != 11))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/statuses\/(container_timeline|unread_hot_timeline|extend|video_mixtimeline|unread_topic_timeline) '.items |= map(select(.category != "card"))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/statuses\/(unread_)?friends(\/|_)timeline '.items |= map(select(.category != "card"))'
+http-response-jq ^https?:\/\/m?api\.weibo\.c(n|om)\/\d\/video\/(community_tab|remind_info|tiny_stream_video_list) '.items |= map(select(.category != "card"))'
 http-response-jq ^https?:\/\/appconf\.mail\.163\.com\/mailmaster\/api\/page\/.*conf\.do '.data |= del(.masterLoginGuideList, .masterOperatorList, .functionOperatorInfoList, .memberOperator, .activityTabInfoList, .extList)'
 
 
