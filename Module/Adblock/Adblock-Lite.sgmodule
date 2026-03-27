@@ -106,6 +106,8 @@ IP-CIDR,203.107.33.92/32,REJECT,no-resolve
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/vipmall\/couponcfg\/get - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/iyunIds(?:\?.*)? - reject
 ^https?:\/\/interface(\d)?\.music\.163\.com\/e?api\/ad\/prefetch\/select - reject
+^https?:\/\/god\.gameyw\.netease\.com\/v\d\/ad\/serving\/app-start - reject
+^https?:\/\/ok\.166\.net\/reunionpub\/202[2-9]{1}-[0-9]{2}-[0-9]{2}\/ntesgod_cms\/.*\.jpg$ - reject-200
 ^https?:\/\/interface(\d)?\.music\.163\.com\/w?eapi\/(resource-exposure\/)?activity - reject
 ^https?:\/\/cdn\.cmgadx\.com\/sdk\/pool\/\w+\.json - reject
 ^https?:\/\/guide-acs\.m\.taobao\.com\/gw\/mtop\.fc\.resource\.tacdata\.get - reject
@@ -127,6 +129,17 @@ IP-CIDR,203.107.33.92/32,REJECT,no-resolve
 ^https?:\/\/analytics\.oceanengine\.com\/.* - reject
 # 字节系监控上报
 ^https?:\/\/mon.*\.zijieapi\.com\/ - reject
+# 字节跳动（补充 shadowrocket-surge-loon-qx/AD.sgmodule 中的细分规则）
+^https?:\/\/.+\/img\/ad\.union\.api\/ - reject
+^https?:\/\/.+\.pstatp\.com\/img\/ad - reject
+^https?:\/\/.+\.(amemv|musical|snssdk|tiktokv)\.(com|ly)\/(api|motor)\/ad\/ - reject
+^https?:\/\/dsp\.toutiao\.com\/api\/xunfei\/ads\/ - reject
+^https?:\/\/.+\.snssdk\.com\/motor\/operation\/activity\/display\/config\/V2\/ - reject
+^https?:\/\/[\w-]+\.amemv\.com\/aweme\/v\d\/ad\/ - reject
+^https?:\/\/[\w-]+\.snssdk\.com\/.+_ad\/ - reject
+^https?:\/\/.+\.amemv\.com\/.+app_log - reject-img
+^https?:\/\/.+\.amemv\.com\/.+report - reject-img
+^https?:\/\/.+\.amemv\.com\/.+stats - reject-img
 # 腾讯广点通广告 + SDK QUIC
 ^https?:\/\/.*\.gdt\.qq\.com\/.* - reject
 ^https?:\/\/sdkquic\.e\.qq\.com\/ - reject
@@ -258,4 +271,4 @@ weixin110.js=type=http-response, pattern=^https\:\/\/(weixin110\.qq|security.wec
 jd.remove_ads=type=http-response, pattern=^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(deliverLayer|getTabHomeInfo|myOrderInfo|orderTrackBusiness|personinfoBusiness|start|welcomeHome), script-path=https://github.com/bunizao/Mirrored/raw/main/Chores/js/JD_remove_ads.js, requires-body=true, max-size=-1, timeout=60
 
 [MITM]
-hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, acs.m.goofish.com, g-acs.m.goofish.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, capis*.didapinche.com, capis-slb.didapinche.com, as.xiaojukeji.com, ct.xiaojukeji.com, hd.xiaojukeji.com, res.xiaojukeji.com, www.didapinche.com, conf.diditaxi.com.cn, wallet.95516.com, tysdk.95516.com, ads.95516.com, api.m.jd.com, jdread-api.jd.com, ms.jr.jd.com, m.jd.com, m.360buyimg.com, *.10086.cn, *.10010.com, *.10010.cn
+hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, acs.m.goofish.com, g-acs.m.goofish.com, ad.seeyouyima.com, ab.seeyouyima.com, ad-logs.seeyouyima.com, x.seeyouyima.com, *.xmseeyouyima.com, *.uyunad.com, *.snssdk.com, *.volces.com, *.volceapplog.com, lf-cdn-tos.bytescm.com, analytics.oceanengine.com, *.gdt.qq.com, *.pangolin-sdk-toutiao.com, *.pangolin-sdk-toutiao1.com, *.pglstatp-toutiao.com, *.zijieapi.com, sdkquic.e.qq.com, capis*.didapinche.com, capis-slb.didapinche.com, as.xiaojukeji.com, ct.xiaojukeji.com, hd.xiaojukeji.com, res.xiaojukeji.com, www.didapinche.com, conf.diditaxi.com.cn, wallet.95516.com, tysdk.95516.com, ads.95516.com, api.m.jd.com, jdread-api.jd.com, ms.jr.jd.com, m.jd.com, m.360buyimg.com, *.10086.cn, *.10010.com, *.10010.cn, i-lq.snssdk.com.*, gurd.snssdk.com.*, byteimg.com.*, ok.166.net, sf?-ttcdn-tos.pstatp.com, i.snssdk.com.*, sf6-be-pack.pglstatp-toutiao.com, god.gameyw.netease.com, reading-hl.snssdk.com, aweme.snssdk.com, sf3-be-pack.pglstatp-toutiao.com, *.pstatp.com.*
