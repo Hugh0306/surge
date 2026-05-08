@@ -7,9 +7,37 @@
 #!tag=去广告
 #!homepage=https://github.com/Hugh0306/surge
 #!date=2026-05-08 00:00:00
+# ==============================
+# 使用前提：
+# 1. Surge 开启「重写」功能
+# 2. Surge 开启「MitM」，以下域名会自动追加到 hostname
+# ==============================
 
 [URL Rewrite]
-# 哈啰 App 广告接口
-^https?:\/\/gameapi\.hellobike\.com\/api - reject
-# 哈啰微信小程序广告接口
-^https?:\/\/api\.hellobike\.com\/api\?adx - reject-dict
+
+# ── 开屏广告 ──────────────────────────────────────────
+# 启动页广告拉取
+^https?://a\.hellobike\.com/evehicle/api\?splash         reject-200
+^https?://a\.hellobike\.com/evehicle/api\?ad\.            reject-200
+^https?://api\.hellobike\.com/v[0-9]+/ad/                 reject-200
+^https?://api\.hellobike\.com/v[0-9]+/splash/             reject-200
+
+# ── 首页 Banner / 信息流广告 ──────────────────────────
+^https?://api\.hellobike\.com/v[0-9]+/home/banner/ad      reject-200
+^https?://api\.hellobike\.com/v[0-9]+/home/floatAd        reject-200
+^https?://api\.hellobike\.com/v[0-9]+/advert/             reject-200
+^https?://api\.hellobike\.com/v[0-9]+/popupAd             reject-200
+
+# ── 广告上报 / 曝光打点（静默丢弃）────────────────────
+^https?://a\.hellobike\.com/evehicle/api\?ad\.report      reject-200
+^https?://a\.hellobike\.com/evehicle/api\?ad\.exposure    reject-200
+^https?://log\.hellobike\.com/                            reject-200
+^https?://metrics\.hellobike\.com/                        reject-200
+
+# ── 第三方广告 SDK（穿山甲 / 优量汇）─────────────────
+^https?://.*\.pangle\.cn/                                 reject-200
+^https?://.*\.pangolin.*\.com/                            reject-200
+^https?://.*\.gdt\.qq\.com/                              reject-200
+
+[MITM]
+hostname = %APPEND% a.hellobike.com, api.hellobike.com, log.hellobike.com, metrics.hellobike.com
