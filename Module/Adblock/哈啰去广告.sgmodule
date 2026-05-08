@@ -1,5 +1,5 @@
 #!name=哈啰去广告
-#!desc=过滤哈啰App与哈啰小程序常见广告接口
+#!desc=过滤哈啰App与哈啰小程序常见广告、弹窗和配置下发接口
 #!author=Hugh0306
 #!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/hellobike.png
 #!category=BetaModule
@@ -14,7 +14,6 @@
 # ==============================
 
 [URL Rewrite]
-
 # ── 开屏广告 ──────────────────────────────────────────
 # 启动页广告拉取
 ^https?://a\.hellobike\.com/evehicle/api\?splash         reject-200
@@ -38,6 +37,14 @@
 ^https?://.*\.pangle\.cn/                                 reject-200
 ^https?://.*\.pangolin.*\.com/                            reject-200
 ^https?://.*\.gdt\.qq\.com/                              reject-200
+# 哈啰 App 广告接口
+^https?:\/\/gameapi\.hellobike\.com\/api - reject
+# 哈啰微信小程序广告接口
+^https?:\/\/api\.hellobike\.com\/api\?adx - reject-dict
+# 常见广告配置池
+^https?:\/\/cdn\.cmgadx\.com\/sdk\/pool\/\w+\.json - reject-dict
+# 弹窗广告下发
+^https?:\/\/qadx\.qinlinad\.com\/ad\/ - reject-dict
 
 [MITM]
-hostname = %APPEND% a.hellobike.com, api.hellobike.com, log.hellobike.com, metrics.hellobike.com
+hostname = %APPEND% a.hellobike.com, api.hellobike.com, cdn.cmgadx.com, gameapi.hellobike.com, log.hellobike.com, metrics.hellobike.com, qadx.qinlinad.com
