@@ -1,7 +1,7 @@
 #!name=哈啰去广告
 #!desc=过滤哈啰App与哈啰小程序常见广告接口
 #!author=Hugh0306
-#!icon=https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d6/9e/0c/d69e0c53-1212-a99a-29a8-12a61e89ecb7/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg
+#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/hellobike.png
 #!category=BetaModule
 #!openUrl=https://apps.apple.com/cn/app/id1245504759
 #!tag=去广告
