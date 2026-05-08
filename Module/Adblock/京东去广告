@@ -1,0 +1,29 @@
+name: 京东去广告
+description: 移除京东开屏广告，精简我的页面。
+open_url: https://apps.apple.com/app/id414245413
+author: RuCu6[https://github.com/RuCu6], Maasea[https://github.com/Maasea]
+homepage: https://hub.kelee.one
+icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/JD.png
+dns: {}
+rules:
+- url_regex:
+    match: ^http://\w{32}\.jddebug\.com/diagnose\?
+    policy: REJECT
+url_rewrites:
+- match: ^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(searchBoxWord|stationPullService|uniformRecommend[06])
+  location: http://reject-dict/
+  status_code: 200
+body_rewrites:
+- response_jq:
+    match: ^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=basicConfig
+    filter: .data.JDMessage.socketmonitor.isSocketEstablishedAhead = 0 | .data.JDMessage.socketmonitor.isSocketReport = 0 | .data.JDHttpToolKit.httpdns.httpdns = 0
+scriptings:
+- http_response:
+    name: 移除京东广告
+    match: ^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(deliverLayer|getTabHomeInfo|myOrderInfo|orderTrackBusiness|personinfoBusiness|start|welcomeHome)
+    script_url: https://kelee.one/Resource/JavaScript/JD/JD_remove_ads.js
+    body_required: true
+mitm:
+  hostnames:
+    includes:
+    - api.m.jd.com

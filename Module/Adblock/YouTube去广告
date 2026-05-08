@@ -1,0 +1,98 @@
+name: YouTube去广告
+description: 移除YouTube的广告。
+compat_arguments:
+  blockUpload: 'false'
+  blockShorts: 'false'
+  blockImmersive: 'false'
+  captionLang: zh-Hans
+  lyricLang: zh-Hans
+  debug: 'false'
+compat_arguments_schema:
+  blockUpload:
+    name: 隐藏上传按钮
+    description: 用于隐藏YouTube底栏的上传按钮
+    default_value: 'false'
+    options:
+    - 'true'
+    - 'false'
+  blockShorts:
+    name: 隐藏Shorts按钮
+    description: 用于隐藏YouTube底栏的Shorts按钮
+    default_value: 'false'
+    options:
+    - 'true'
+    - 'false'
+  blockImmersive:
+    name: 隐藏选段按钮
+    description: 用于隐藏YouTube Music底栏的选段按钮
+    default_value: 'false'
+    options:
+    - 'true'
+    - 'false'
+  captionLang:
+    name: 字幕翻译语言
+    description: 需要把YouTube字幕翻译翻译为何种语言
+    default_value: zh-Hans
+    options:
+    - zh-Hans
+    - zh-Hant
+    - ja
+    - ko
+    - en
+    - off
+  lyricLang:
+    name: 歌词翻译语言
+    description: 需要把YouTube Music字幕翻译翻译为何种语言
+    default_value: zh-Hans
+    options:
+    - zh-Hans
+    - zh-Hant
+    - ja
+    - ko
+    - en
+    - off
+  debug:
+    name: 启用调试模式
+    description: 此插件的调试模式
+    default_value: 'false'
+    options:
+    - 'true'
+    - 'false'
+open_url: https://apps.apple.com/app/id544007664
+author: Maasea[https://github.com/Maasea], VirgilClyne[https://github.com/VirgilClyne], Choler[https://github.com/Choler], DivineEngine[https://github.com/DivineEngine], app2smile[https://github.com/app2smile]
+homepage: https://hub.kelee.one
+icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/YouTube.png
+dns: {}
+rules:
+- and:
+    match:
+    - domain_suffix:
+        match: googlevideo.com
+    - protocol:
+        match: QUIC
+    policy: REJECT
+- and:
+    match:
+    - domain_suffix:
+        match: youtubei.googleapis.com
+    - protocol:
+        match: QUIC
+    policy: REJECT
+url_rewrites:
+- match: ^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&oad
+  location: http://reject-200/
+  status_code: 200
+scriptings:
+- http_response:
+    name: YouTube去广告
+    match: ^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch))(\?(.*))?$
+    script_url: https://kelee.one/Resource/JavaScript/YouTube/YouTube_remove_ads/YouTube_remove_ads_response.js
+    env:
+      _compat.$argument: '{"blockUpload":true,"blockShorts":true,"blockImmersive":true,"captionLang":"zh-Hans","lyricLang":"zh-Hans","debug":false}'
+    body_required: true
+    binary_body: true
+mitm:
+  hostnames:
+    includes:
+    - '*.googlevideo.com'
+    - youtubei.googleapis.com
