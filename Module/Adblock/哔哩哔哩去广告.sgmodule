@@ -1,7 +1,7 @@
 #!name=哔哩哔哩去广告
 #!desc=过滤哔哩哔哩开屏、推荐流和动态流广告
 #!author=Hugh0306
-#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/bilibili.png
+https://github.com/BiliUniverse/ADBlock/raw/main/src/assets/icon_rounded.png
 #!category=BetaModule
 #!openUrl=https://apps.apple.com/cn/app/id736536022
 #!tag=去广告
