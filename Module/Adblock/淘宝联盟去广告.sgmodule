@@ -1,0 +1,23 @@
+#!name=淘宝联盟去广告
+#!desc=过滤淘宝联盟常见广告、开屏和营销接口
+#!author=Hugh0306
+#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/taobaolianmeng.png
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/cn/app/id785946884
+#!tag=去广告
+#!homepage=https://github.com/Hugh0306/surge
+#!date=2026-05-08 00:00:00
+
+[URL Rewrite]
+# 淘宝联盟阿里妈妈推广页广告
+^https?:\/\/[a-zA-Z0-9_.-]+\.taobao\.com\/gw\/mtop\.alimama\.abyss\.unionpage\.get - reject
+# 广告服务接口
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.advertisementservice\.getadv\/ - reject
+# 阿里妈妈配置接口
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alimama\.etao\.config\.query - reject
+# 一淘开屏接口
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.etao\.noah\.query.*etao_splash - reject
+# 阿里系启动营销接口
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.aicloud\.splash - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.cbu\.app\.homepage\.startup - reject
+^https?:\/\/acs\.m\.taobao\.com\/gw\/mtop\.alibaba\.mos\.app\.homepage\.launch - reject
