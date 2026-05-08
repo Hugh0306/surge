@@ -1,30 +1,39 @@
-#!name=哔哩哔哩去广告
-#!desc=过滤哔哩哔哩开屏广告
-#!author=Hugh0306 / Fixed by QQ
-#!category=BetaModule
-#!openUrl=https://apps.apple.com/cn/app/id736536022
+#!name = Bilibili 去广告
+#!desc = 去除开屏广告、信息流广告、视频前贴片广告
 #!tag=去广告
-#!homepage=https://github.com/Hugh0306/surge
-#!icon=https://cdn.jsdelivr.net/gh/luestr/IconResource@main/App_icon/120px/Bilibili.png
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/Bilibili.png
 #!date=2026-05-08 00:00:00
 
-[Rule]
-DOMAIN,cm.bilibili.com,REJECT
+# ==============================
+# 使用前提：
+# 1. Surge 开启「重写」功能
+# 2. Surge 开启「MitM」，并确保以下域名已在 MitM hostname 列表中：
+#    app.bilibili.com, api.bilibili.com
+# ==============================
 
 [URL Rewrite]
-^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/show - reject
-^https?:\/\/app\.bilibili\.com\/x\/v3\/splash\/ - reject
-^https?:\/\/app\.bilibili\.com\/x\/resource\/show\/splash - reject
-^https?:\/\/i\d\.hdslb\.com\/bfs\/fawkes - reject
 
-[Script]
-# 不启用 gRPC 脚本，避免搜索、视频简介、评论异常
-# bilibili.helper.dmView=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.community\.service\.dm\.v1\.DM\/DmView,requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
-# bilibili.helper.teenager=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.interface\.v1\.Teenagers\/ModeStatus,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
-# bilibili.helper.v1.view=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.(view|viewunite)\.v1\.View\/(View|ViewProgress)$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
-# bilibili.helper.mainList=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.main\.community\.reply\.v1\.Reply\/MainList,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
-# bilibili.helper.searchAll=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.polymer\.app\.search\.v1\.Search\/SearchAll$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
-# bilibili.helper.dynAll=type=http-response,pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.dynamic\.v2\.Dynamic\/DynAll$,requires-body=1,binary-body-mode=1,max-size=-1,script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
+# 开屏广告（启动时拉取的广告列表和展示上报）
+^https?://app\.bilibili\.com/x/v2/splash/(list|show) reject-200
+
+# 首页信息流广告
+^https?://app\.bilibili\.com/x/v2/feed/index reject-200
+
+# 搜索结果内广告
+^https?://app\.bilibili\.com/x/v2/search reject-200
+
+# 推荐页广告（番剧/活动 banner）
+^https?://api\.bilibili\.com/x/web-interface/index/top/feed/rcmd reject-200
+
+# 视频播放前贴片广告
+^https?://api\.bilibili\.com/x/web-show/page/region reject-200
+
+# 直播间广告
+^https?://api\.live\.bilibili\.com/xlive/app-room/v1/index/getInfoByRoom reject-200
+
+# 广告上报（静默丢弃，避免 App 报错）
+^https?://data\.bilibili\.com/log/ reject-200
+^https?://app\.bilibili\.com/x/report/ reject-200
 
 [MITM]
-hostname = %APPEND% app.bilibili.com
+hostname = %APPEND% app.bilibili.com, api.bilibili.com, api.live.bilibili.com, data.bilibili.com
