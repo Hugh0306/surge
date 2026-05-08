@@ -1,0 +1,15 @@
+#!name=哈啰去广告
+#!desc=过滤哈啰App与哈啰小程序常见广告接口
+#!author=Hugh0306
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hellobike.png
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/cn/app/id1245504759
+#!tag=去广告
+#!homepage=https://github.com/Hugh0306/surge
+#!date=2026-05-08 00:00:00
+
+[URL Rewrite]
+# 哈啰 App 广告接口
+^https?:\/\/gameapi\.hellobike\.com\/api - reject
+# 哈啰微信小程序广告接口
+^https?:\/\/api\.hellobike\.com\/api\?adx - reject-dict
