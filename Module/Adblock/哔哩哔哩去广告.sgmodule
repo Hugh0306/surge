@@ -1,7 +1,7 @@
 #!name = Bilibili 去广告
 #!desc = 去除开屏广告、信息流广告、视频前贴片广告
-#!tag=去广告
-#!icon=https://github.com/BiliUniverse/Enhanced/raw/main/src/assets/icon_rounded.png
+#!tag = 去广告
+#!icon = https://github.com/BiliUniverse/Enhanced/raw/main/src/assets/icon_rounded.png
 
 # ==============================
 # 使用前提：
