@@ -1,19 +1,58 @@
-// liepin_splash.js — 清空启动页广告
-const body = $response.body;
-if (body) {
-  try {
-    let obj = JSON.parse(body);
-    const keys = ['splash','splashAd','startup','launchAd','guide'];
-    keys.forEach(k => {
-      if (obj.data && obj.data[k] !== undefined) obj.data[k] = null;
-      if (obj[k] !== undefined) obj[k] = null;
-    });
-    // 将跳过时间设为 0
-    if (obj.data && obj.data.time !== undefined) obj.data.time = 0;
-    $done({ body: JSON.stringify(obj) });
-  } catch(e) {
-    $done({});
+// liepin_splash.js
+let body = $response.body;
+
+try {
+  let obj = JSON.parse(body);
+
+  const badKeys = [
+    "splash",
+    "splashAd",
+    "startup",
+    "startupAd",
+    "launch",
+    "launchAd",
+    "guide",
+    "guideAd",
+    "ad",
+    "ads",
+    "advert",
+    "advertisement"
+  ];
+
+  function clean(o) {
+    if (!o || typeof o !== "object") return;
+
+    for (const k of Object.keys(o)) {
+      const lower = k.toLowerCase();
+
+      if (badKeys.some(x => lower.includes(x.toLowerCase()))) {
+        if (Array.isArray(o[k])) {
+          o[k] = [];
+        } else if (typeof o[k] === "object") {
+          o[k] = null;
+        } else if (typeof o[k] === "number") {
+          o[k] = 0;
+        } else if (typeof o[k] === "boolean") {
+          o[k] = false;
+        } else {
+          o[k] = "";
+        }
+      } else {
+        clean(o[k]);
+      }
+    }
   }
-} else {
+
+  clean(obj);
+
+  if (obj.data) {
+    obj.data.time = 0;
+    obj.data.duration = 0;
+    obj.data.interval = 0;
+    obj.data.countdown = 0;
+  }
+
+  $done({ body: JSON.stringify(obj) });
+} catch (e) {
   $done({});
 }
