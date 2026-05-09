@@ -1,22 +1,18 @@
 #!name = 猎聘去广告
-#!desc = 屏蔽猎聘 App 及网页广告、推广内容、数据跟踪
+#!desc = 屏蔽猎聘 App 广告、启动页广告及数据跟踪
 #!system = iOS, macOS
-#!version = 1.0
-#!author = Generated for QQ
-#!homepage = https://liepin.com
-
-[MITM]
-hostname = %APPEND% api.liepin.com, m-api.liepin.com, app.liepin.com, *.liepin.com
+#!version = 1.1
+#!author = Hugh0306
 
 [Script]
-# 拦截广告接口响应
-猎聘-广告拦截 = type=http-response, pattern=^https?://(api|m-api|app)\.liepin\.com/(ad|ads|banner|recommend-ad|promotion|track|buried|log|analytics|event|埋点)(/|$), requires-body=1, max-size=0, timeout=10, script-path=liepin_ad.js
+# 启动页广告
+猎聘-启动广告 = type=http-response,pattern=^https?://api\.liepin\.com/(splash|startup|launch|guide)(/|$),requires-body=1,max-size=131072,timeout=10,script-path=https://raw.githubusercontent.com/Hugh0306/surge/refs/heads/main/Script/Adblock/%E7%8C%8E%E8%81%98-%E5%90%AF%E5%8A%A8%E5%B9%BF%E5%91%8A
 
-# 拦截启动页广告
-猎聘-启动广告 = type=http-response, pattern=^https?://api\.liepin\.com/(splash|startup|launch|guide)(/|$), requires-body=1, max-size=131072, timeout=10, script-path=liepin_splash.js
+# 广告接口拦截
+猎聘-广告拦截 = type=http-response,pattern=^https?://(api|m-api|app)\.liepin\.com/(ad|ads|banner|recommend-ad|promotion|track|buried|log|analytics|event)(/|$),requires-body=1,max-size=131072,timeout=10,script-path=https://raw.githubusercontent.com/Hugh0306/surge/refs/heads/main/Script/Adblock/%E7%8C%8E%E8%81%98-%E5%B9%BF%E5%91%8A%E6%8B%A6%E6%88%AA
 
 [Rule]
-# 屏蔽广告 & 跟踪域名
+# 跟踪 & 埋点
 DOMAIN-SUFFIX,analytics.liepin.com,REJECT
 DOMAIN-SUFFIX,track.liepin.com,REJECT
 DOMAIN-SUFFIX,log.liepin.com,REJECT
@@ -33,7 +29,9 @@ DOMAIN-SUFFIX,umsns.com,REJECT
 DOMAIN-SUFFIX,app.adjust.com,REJECT
 DOMAIN-SUFFIX,appsflyer.com,REJECT
 DOMAIN-SUFFIX,mintegral.com,REJECT
-DOMAIN-SUFFIX,is.com,REJECT
 DOMAIN-SUFFIX,talkingdata.net,REJECT
 DOMAIN-SUFFIX,talkingdata.com,REJECT
 URL-REGEX,^https?://.*liepin\.com.*(ad|banner|splash|recommend[-_]ad|promotion|advert),REJECT
+
+[MITM]
+hostname = %APPEND% api.liepin.com, m-api.liepin.com, app.liepin.com
