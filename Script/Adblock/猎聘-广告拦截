@@ -1,0 +1,16 @@
+// liepin_ad.js — 广告接口返回空数据
+const body = $response.body;
+if (body) {
+  try {
+    let obj = JSON.parse(body);
+    // 清空广告列表字段（根据实际抓包字段名调整）
+    const adKeys = ['adList','bannerList','ads','promotions',
+                    'adData','recommendAd','splashAd'];
+    adKeys.forEach(k => { if (obj[k] !== undefined) obj[k] = []; });
+    $done({ body: JSON.stringify(obj) });
+  } catch(e) {
+    $done({});
+  }
+} else {
+  $done({});
+}
