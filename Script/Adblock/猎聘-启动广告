@@ -1,0 +1,19 @@
+// liepin_splash.js — 清空启动页广告
+const body = $response.body;
+if (body) {
+  try {
+    let obj = JSON.parse(body);
+    const keys = ['splash','splashAd','startup','launchAd','guide'];
+    keys.forEach(k => {
+      if (obj.data && obj.data[k] !== undefined) obj.data[k] = null;
+      if (obj[k] !== undefined) obj[k] = null;
+    });
+    // 将跳过时间设为 0
+    if (obj.data && obj.data.time !== undefined) obj.data.time = 0;
+    $done({ body: JSON.stringify(obj) });
+  } catch(e) {
+    $done({});
+  }
+} else {
+  $done({});
+}
