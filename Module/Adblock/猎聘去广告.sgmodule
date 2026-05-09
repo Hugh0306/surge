@@ -1,0 +1,15 @@
+#!name=猎聘去广告
+#!desc=过滤猎聘 App 常见广告卡片和开屏营销接口
+#!author=Hugh0306
+#!icon=https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2a/4f/40/2a4f4023-b9e9-09e8-b84a-f480c5ce5694/AppIcon-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/cn/app/id540996859
+#!tag=去广告
+#!homepage=https://github.com/Hugh0306/surge
+#!date=2026-05-09 00:00:00
+
+[URL Rewrite]
+# 首页广告卡片
+^https?:\/\/api-ac\.liepin\.com\/api\/com\.liepin\.cyclops\.live\.get-ad-cards - reject
+# App 内营销展示
+^https?:\/\/api-wanda\.liepin\.com\/api\/com\.liepin\.cbp\.baizhong\.op\.v2-show-4app - reject
