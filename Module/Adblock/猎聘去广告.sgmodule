@@ -1,18 +1,39 @@
-#!name=猎聘去广告
-#!desc=过滤猎聘 App 常见广告卡片、开屏和营销接口
-#!author=Hugh0306
-#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/taobaolianmeng.png
-#!category=BetaModule
-#!openUrl=https://apps.apple.com/cn/app/id540996859
-#!tag=去广告
-#!homepage=https://github.com/Hugh0306/surge
-#!date=2026-05-09 00:00:00
+#!name = 猎聘去广告
+#!desc = 屏蔽猎聘 App 及网页广告、推广内容、数据跟踪
+#!system = iOS, macOS
+#!version = 1.0
+#!author = Generated for QQ
+#!homepage = https://liepin.com
 
-[URL Rewrite]
-# 开屏 / 启动营销
-^https?:\/\/api-ac\.liepin\.com\/api\/com\.liepin\..*(startup|launch|splash) - reject
-^https?:\/\/api-wanda\.liepin\.com\/api\/com\.liepin\..*(startup|launch|splash) - reject
-# 首页广告卡片
-^https?:\/\/api-ac\.liepin\.com\/api\/com\.liepin\.cyclops\.live\.get-ad-cards - reject
-# App 内营销展示
-^https?:\/\/api-wanda\.liepin\.com\/api\/com\.liepin\.cbp\.baizhong\.op\.v2-show-4app - reject
+[MITM]
+hostname = %APPEND% api.liepin.com, m-api.liepin.com, app.liepin.com, *.liepin.com
+
+[Script]
+# 拦截广告接口响应
+猎聘-广告拦截 = type=http-response, pattern=^https?://(api|m-api|app)\.liepin\.com/(ad|ads|banner|recommend-ad|promotion|track|buried|log|analytics|event|埋点)(/|$), requires-body=1, max-size=0, timeout=10, script-path=liepin_ad.js
+
+# 拦截启动页广告
+猎聘-启动广告 = type=http-response, pattern=^https?://api\.liepin\.com/(splash|startup|launch|guide)(/|$), requires-body=1, max-size=131072, timeout=10, script-path=liepin_splash.js
+
+[Rule]
+# 屏蔽广告 & 跟踪域名
+DOMAIN-SUFFIX,analytics.liepin.com,REJECT
+DOMAIN-SUFFIX,track.liepin.com,REJECT
+DOMAIN-SUFFIX,log.liepin.com,REJECT
+DOMAIN-SUFFIX,beacon.liepin.com,REJECT
+DOMAIN-SUFFIX,buried.liepin.com,REJECT
+DOMAIN-SUFFIX,event.liepin.com,REJECT
+DOMAIN-KEYWORD,liepin-ad,REJECT
+DOMAIN-KEYWORD,liepin-track,REJECT
+# 广告 SDK
+DOMAIN-SUFFIX,growingio.com,REJECT
+DOMAIN-SUFFIX,giocdn.com,REJECT
+DOMAIN-SUFFIX,umengcloud.com,REJECT
+DOMAIN-SUFFIX,umsns.com,REJECT
+DOMAIN-SUFFIX,app.adjust.com,REJECT
+DOMAIN-SUFFIX,appsflyer.com,REJECT
+DOMAIN-SUFFIX,mintegral.com,REJECT
+DOMAIN-SUFFIX,is.com,REJECT
+DOMAIN-SUFFIX,talkingdata.net,REJECT
+DOMAIN-SUFFIX,talkingdata.com,REJECT
+URL-REGEX,^https?://.*liepin\.com.*(ad|banner|splash|recommend[-_]ad|promotion|advert),REJECT
