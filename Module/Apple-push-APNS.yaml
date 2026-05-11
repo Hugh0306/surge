@@ -1,6 +1,6 @@
 name: 苹果推送服务
-description: 让 APNS 相关域名和网段走代理，适用于打开代理工具后 Apple 推送异常的场景
-author: IBL3ND
+description: 苹果推送服务
+author: hugh
 icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
 
 rules:
