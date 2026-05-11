@@ -1,8 +1,12 @@
-name: "服务器监控"
-description: "服务器监控小组件，通过 SSH 获取服务器状态，支持所有 Widget 尺寸"
-author: "Hugh0306"
-icon: "https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/server-monitoring.png"
-homepage: "https://github.com/Hugh0306/surge"
+#!name=服务器监控
+#!desc=服务器监控小组件
+#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/server-monitoring.png
+
+name: 服务器监控
+description: 服务器监控小组件
+author: Hugh0306
+icon: https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/server-monitoring.png
+homepage: https://github.com/Hugh0306/surge
 
 env_schema:
   host:
