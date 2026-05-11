@@ -1,51 +1,20 @@
-name: 苹果推送服务
-description: 苹果推送服务
-author: hugh
-icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
+#!name=苹果推送服务
+#!desc=苹果推送服务
+#!author=hugh
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png
 
-rules:
-  - domain_suffix:
-      match: push.apple.com
-      policy: iBL3ND
-  - domain_suffix:
-      match: akadns.net
-      policy: iBL3ND
-  - domain_keyword:
-      match: apple.com.edgekey.net
-      policy: iBL3ND
-  - ip_cidr:
-      match: 17.249.0.0/16
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr:
-      match: 17.252.0.0/16
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr:
-      match: 17.57.144.0/22
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr:
-      match: 17.188.128.0/18
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr:
-      match: 17.188.20.0/23
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr6:
-      match: "2620:149:a44::/48"
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr6:
-      match: "2403:300:a42::/48"
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr6:
-      match: "2403:300:a51::/48"
-      policy: iBL3ND
-      no_resolve: true
-  - ip_cidr6:
-      match: "2a01:b740:a42::/48"
-      policy: iBL3ND
-      no_resolve: true
+[Rule]
+DOMAIN-SUFFIX,push.apple.com,iBL3ND
+DOMAIN-SUFFIX,akadns.net,iBL3ND
+DOMAIN-KEYWORD,apple.com.edgekey.net,iBL3ND
+
+IP-CIDR,17.249.0.0/16,iBL3ND,no-resolve
+IP-CIDR,17.252.0.0/16,iBL3ND,no-resolve
+IP-CIDR,17.57.144.0/22,iBL3ND,no-resolve
+IP-CIDR,17.188.128.0/18,iBL3ND,no-resolve
+IP-CIDR,17.188.20.0/23,iBL3ND,no-resolve
+
+IP-CIDR6,2620:149:a44::/48,iBL3ND,no-resolve
+IP-CIDR6,2403:300:a42::/48,iBL3ND,no-resolve
+IP-CIDR6,2403:300:a51::/48,iBL3ND,no-resolve
+IP-CIDR6,2a01:b740:a42::/48,iBL3ND,no-resolve
