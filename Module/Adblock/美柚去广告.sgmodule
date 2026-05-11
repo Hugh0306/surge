@@ -1,7 +1,7 @@
 #!name=美柚去广告
 #!desc=过滤美柚常见广告域名、开屏和广告下发接口
 #!author=Hugh0306
-#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/MeiYou.png
+#!icon=https://raw.githubusercontent.com/Hugh0306/surge/main/Icon/meiyou.png
 #!category=BetaModule
 #!openUrl=https://apps.apple.com/cn/search?term=%E7%BE%8E%E6%9F%9A
 #!tag=去广告
