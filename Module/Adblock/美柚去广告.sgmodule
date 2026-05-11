@@ -1,0 +1,26 @@
+#!name=美柚去广告
+#!desc=过滤美柚常见广告域名、开屏和广告下发接口
+#!author=Hugh0306
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/MeiYou.png
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/cn/search?term=%E7%BE%8E%E6%9F%9A
+#!tag=去广告
+#!homepage=https://github.com/Hugh0306/surge
+#!date=2026-05-11 00:00:00
+
+[Rule]
+# 已知广告域名
+DOMAIN,ad.seeyouyima.com,REJECT
+DOMAIN,ab.seeyouyima.com,REJECT
+DOMAIN,ad-logs.seeyouyima.com,REJECT
+DOMAIN,x.seeyouyima.com,REJECT
+DOMAIN-SUFFIX,xmseeyouyima.com,REJECT
+DOMAIN-SUFFIX,uyunad.com,REJECT
+
+[URL Rewrite]
+# 广告拉取 / 素材下发
+^https?:\/\/x\.seeyouyima\.com\/adx\/ - reject
+^https?:\/\/axxd\.xmseeyouyima\.com\/v\d\/getad - reject
+
+[MITM]
+hostname = %APPEND% x.seeyouyima.com, axxd.xmseeyouyima.com
