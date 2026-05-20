@@ -1,0 +1,10 @@
+#!name=服务器监控
+#!desc=服务器监控小组件，通过 SSH 获取服务器状态
+#!homepage=https://github.com/Hugh0306/surge
+#!icon=https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/09/29/e7/0929e70c-69a0-fa7d-b999-c12d7fc83883/AppIcon-0-0-1x_U007epad-0-1-sRGB-85-220.png/512x512bb.jpg
+#!category=BetaModule
+#!tag=去广告
+#!date=2026-05-20 00:00:00
+
+[Script]
+服务器监控 = type=generic, timeout=60, script-path=https://raw.githubusercontent.com/egerndaddy/quick-start/main/modules/server-monitor.js

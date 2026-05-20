@@ -1,0 +1,44 @@
+#!name=京东去广告
+#!desc=移除京东开屏广告，精简我的页面。
+#!author=RuCu6[https://github.com/RuCu6], Maasea[https://github.com/Maasea]
+#!homepage=https://github.com/Hugh0306/surge
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/JD.png
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/app/id414245413
+#!tag=去广告
+#!date=2026-05-20 00:00:00
+
+[Rule]
+URL-REGEX,^http://\w{32}\.jddebug\.com/diagnose\?,REJECT
+
+[URL Rewrite]
+^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(searchBoxWord|stationPullService|uniformRecommend[06]) - reject-dict
+^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=start$ - reject-array
+^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=queryMaterialAdverts - reject-dict
+^https?:\/\/m\.360buyimg\.com\/mobilecms\/s1125x2436_jfs - reject-img
+^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/aladdin\/na\/m\/getLoadingPicture - reject-dict
+^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/base\/(new)?na\/m\/adInfo - reject-dict
+^https?:\/\/(bdsp-x|dsp-x)\.jd\.com\/adx\/ - reject-dict
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/channel\/module\/opens - reject-dict
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/popup - reject-dict
+
+[Map Local]
+^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(searchBoxWord|stationPullService|uniformRecommend[06]) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=start$ data-type=text data="[]" status-code=200 header="Content-Type:application/json"
+^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=queryMaterialAdverts data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/aladdin\/na\/m\/getLoadingPicture data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/ms\.jr\.jd\.com\/gw\/generic\/base\/(new)?na\/m\/adInfo data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/(bdsp-x|dsp-x)\.jd\.com\/adx\/ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/channel\/module\/opens data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/jdread-api\.jd\.com\/jdread\/api\/popup data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[Body Rewrite]
+http-response-jq ^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=basicConfig '.data.JDMessage.socketmonitor.isSocketEstablishedAhead = 0 | .data.JDMessage.socketmonitor.isSocketReport = 0 | .data.JDHttpToolKit.httpdns.httpdns = 0'
+
+[Script]
+移除京东广告 = type=http-response, pattern=^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=(deliverLayer|getTabHomeInfo|myOrderInfo|orderTrackBusiness|personinfoBusiness|start|welcomeHome), requires-body=1, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/JD/JD_remove_ads_bunizao.js
+关闭京东基础配置广告开关 = type=http-response, pattern=^https:\/\/api\.m\.jd\.com\/client\.action\?functionId=basicConfig, requires-body=1, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/DDGKSF/jd_json.js
+移除京东物流开屏广告 = type=http-response, pattern=^https:\/\/api\.m\.jd\.com\/api\?functionId=delivery_show, requires-body=1, max-size=-1, timeout=60, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/DDGKSF/startup.js
+
+[MITM]
+hostname = %APPEND% api.m.jd.com, ms.jr.jd.com, bdsp-x.jd.com, dsp-x.jd.com, jdread-api.jd.com

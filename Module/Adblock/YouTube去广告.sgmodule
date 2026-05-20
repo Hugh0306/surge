@@ -1,0 +1,22 @@
+#!name=YouTube去广告
+#!desc=移除YouTube的广告。
+#!author=Maasea[https://github.com/Maasea], VirgilClyne[https://github.com/VirgilClyne], Choler[https://github.com/Choler], DivineEngine[https://github.com/DivineEngine], app2smile[https://github.com/app2smile]
+#!homepage=https://github.com/Hugh0306/surge
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/YouTube.png
+#!category=BetaModule
+#!openUrl=https://apps.apple.com/app/id544007664
+#!tag=去广告
+#!date=2026-05-20 00:00:00
+
+[Rule]
+# Unsupported Egern AND rule, kept inactive to avoid overblocking: {"match"=>[{"domain_suffix"=>{"match"=>"googlevideo.com"}}, {"protocol"=>{"match"=>"QUIC"}}], "policy"=>"REJECT"}
+# Unsupported Egern AND rule, kept inactive to avoid overblocking: {"match"=>[{"domain_suffix"=>{"match"=>"youtubei.googleapis.com"}}, {"protocol"=>{"match"=>"QUIC"}}], "policy"=>"REJECT"}
+
+[URL Rewrite]
+^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&oad - reject-200
+
+[Script]
+YouTube去广告 = type=http-response, pattern=^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch))(\?(.*))?$, requires-body=1, max-size=-1, timeout=60, script-path=https://kelee.one/Resource/JavaScript/YouTube/YouTube_remove_ads/YouTube_remove_ads_response.js
+
+[MITM]
+hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com

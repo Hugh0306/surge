@@ -1,0 +1,31 @@
+#!name=Bilibili 去广告
+#!desc=去除开屏广告、首页信息流广告、动态广告
+#!tag=去广告
+#!icon=https://github.com/BiliUniverse/Enhanced/raw/main/src/assets/icon_rounded.png
+
+[Rule]
+DOMAIN,cm.bilibili.com,REJECT
+DOMAIN-WILDCARD,*pcdn*.biliapi.net,REJECT
+
+[URL Rewrite]
+# 开屏广告
+^https?:\/\/app\.bilibili\.com\/x\/v2\/splash\/show - reject
+^https?:\/\/app\.bilibili\.com\/x\/v3\/splash\/ - reject
+^https?:\/\/app\.bilibili\.com\/x\/resource\/show\/splash - reject
+
+[Script]
+# 首页信息流与开屏走稳定脚本
+bilibili.helper.v2 = type=http-response, pattern=^https:\/\/app\.bilibili\.com\/x\/v2\/(splash|feed\/index), requires-body=1, max-size=-1, binary-body-mode=0, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.v2.js
+
+# 弹幕命令广告
+bilibili.helper.dmView = type=http-response, pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.community\.service\.dm\.v1\.DM\/DmView, requires-body=1, max-size=-1, binary-body-mode=1, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
+
+# 青少年模式弹窗
+bilibili.helper.teenager = type=http-response, pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.interface\.v1\.Teenagers\/ModeStatus, requires-body=1, binary-body-mode=1, max-size=-1, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
+
+# 动态广告
+bilibili.helper.dynAll = type=http-response, pattern=^https:\/\/grpc\.biliapi\.net\/bilibili\.app\.dynamic\.v2\.Dynamic\/DynAll$, requires-body=1, binary-body-mode=1, max-size=-1, script-path=https://raw.githubusercontent.com/Hugh0306/surge/main/Script/Adblock/Bilibili/bilibili.helper.js
+
+[MITM]
+hostname = %APPEND% app.bilibili.com, grpc.biliapi.net
+
