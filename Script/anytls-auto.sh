@@ -5,11 +5,12 @@ set -o pipefail
 # Hugh0306 AnyTLS one-shot installer
 # Logic: install/update sing-box core [14] -> add node [1] -> AnyTLS [5]
 # Defaults: AnyTLS mode, default server IP, port 61368, default SNI www.amd.com,
-#           random password, default node name, auto self-signed cert.
+#           random password, node name test, auto self-signed cert.
 
 PATCHED_SB_URL="https://raw.githubusercontent.com/Hugh0306/surge/main/Script/singbox-surge.sh"
 TARGET="/usr/local/bin/sb"
 PORT="${1:-61368}"
+NODE_NAME="${2:-test}"
 
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
   echo "[错误] 请使用 root 权限运行：sudo bash $0" >&2
@@ -19,6 +20,10 @@ fi
 if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1024 ] || [ "$PORT" -gt 65535 ]; then
   echo "[错误] 端口无效：$PORT。端口范围应为 1024-65535。" >&2
   exit 1
+fi
+
+if [ -z "$NODE_NAME" ]; then
+  NODE_NAME="test"
 fi
 
 download() {
@@ -45,20 +50,20 @@ echo "[信息] 下载 Surge 输出增强版 singbox 脚本..."
 download "$PATCHED_SB_URL" "$TMP_LOADER" || exit 1
 chmod +x "$TMP_LOADER"
 
-echo "[信息] 自动执行：14 -> 1 -> 5 -> AnyTLS:${PORT}，其余选项使用默认值。"
+echo "[信息] 自动执行：14 -> 1 -> 5 -> AnyTLS:${PORT}，节点名 ${NODE_NAME}，其余选项使用默认值。"
 
 # Input mapping:
-# 14       main menu: install/update sing-box core
-# x1       x consumed by "press any key", then 1 enters add-node menu
-# 5        add-node menu: AnyTLS
-# blank    AnyTLS mode: default 1 = AnyTLS
-# blank    server IP: default current public IP
-# PORT     listen port
-# blank    SNI: default www.amd.com
-# blank    password/UUID: random
-# blank    node name: default AnyTLS-PORT
-# blank    cert type: default auto self-signed
-# x0       x consumed by "press any key", then 0 exits main menu
+# 14        main menu: install/update sing-box core
+# x1        x consumed by "press any key", then 1 enters add-node menu
+# 5         add-node menu: AnyTLS
+# blank     AnyTLS mode: default 1 = AnyTLS
+# blank     server IP: default current public IP
+# PORT      listen port
+# blank     SNI: default www.amd.com
+# blank     password/UUID: random
+# NODE_NAME node name: default test
+# blank     cert type: default auto self-signed
+# x0        x consumed by "press any key", then 0 exits main menu
 {
   printf '14\n'
   printf 'x1\n'
@@ -68,7 +73,7 @@ echo "[信息] 自动执行：14 -> 1 -> 5 -> AnyTLS:${PORT}，其余选项使�
   printf '%s\n' "$PORT"
   printf '\n'
   printf '\n'
-  printf '\n'
+  printf '%s\n' "$NODE_NAME"
   printf '\n'
   printf 'x0\n'
 } | bash "$TMP_LOADER" 2>&1 | tee "$TMP_OUTPUT"
