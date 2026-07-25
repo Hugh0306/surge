@@ -102,21 +102,16 @@ if [ ! -x "$BIN" ] || ! "$BIN" version >/dev/null 2>&1; then
 fi
 need_openssl
 
-# 每次执行都生成全新的密码，不再复用 anytls.env 中的旧密码。
-OLD_PASSWORD=""
-if [ -f "$STATE" ]; then
-  OLD_PASSWORD="$(sed -n "s/^PASSWORD='\(.*\)'$/\1/p" "$STATE" | head -n1)"
-fi
-
+# 密码按 VPS 固定：首次运行随机生成并保存，后续运行复用本机保存的密码。
 PASSWORD=""
-i=0
-while [ -z "$PASSWORD" ] || [ "$PASSWORD" = "$OLD_PASSWORD" ]; do
+if [ -f "$STATE" ]; then
+  PASSWORD="$(sed -n "s/^PASSWORD='\(.*\)'$/\1/p" "$STATE" | head -n1)"
+fi
+if [ -z "$PASSWORD" ]; then
   PASSWORD="$(cat /proc/sys/kernel/random/uuid 2>/dev/null || true)"
   [ -n "$PASSWORD" ] || PASSWORD="$("$BIN" generate uuid 2>/dev/null || true)"
   [ -n "$PASSWORD" ] || PASSWORD="$(openssl rand -hex 16)"
-  i=$((i + 1))
-  [ "$i" -lt 5 ] || break
-done
+fi
 [ -n "$PASSWORD" ] || { echo "密码生成失败" >&2; exit 1; }
 
 if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
