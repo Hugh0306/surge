@@ -19,9 +19,13 @@ mkdir -p "$TMP" "$DIR"
 trap 'rm -rf "$TMP"' EXIT INT TERM
 
 get() {
-  if command -v curl >/dev/null 2>&1; then curl -LfsS --connect-timeout 10 "$1" -o "$2"
-  elif command -v wget >/dev/null 2>&1; then wget -q -T 15 "$1" -O "$2"
-  else echo "缺少 curl/wget" >&2; exit 1
+  if command -v curl >/dev/null 2>&1; then
+    curl -LfsS --connect-timeout 10 "$1" -o "$2"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -T 15 "$1" -O "$2"
+  else
+    echo "缺少 curl/wget" >&2
+    exit 1
   fi
 }
 
@@ -37,7 +41,8 @@ need_openssl() {
   elif command -v yum >/dev/null 2>&1; then
     yum -y -q install openssl >/dev/null 2>&1
   else
-    echo "缺少 openssl，且无法自动安装" >&2; exit 1
+    echo "缺少 openssl，且无法自动安装" >&2
+    exit 1
   fi
 }
 
@@ -50,17 +55,49 @@ install_singbox() {
     *) echo "不支持的架构: $ARCH" >&2; exit 1 ;;
   esac
 
-  VER="1.13.8"
+  # Stable fallback; GitHub API is only used to discover a newer stable release.
+  VER="1.13.12"
   if get "https://api.github.com/repos/SagerNet/sing-box/releases/latest" "$TMP/release.json" 2>/dev/null; then
     LATEST="$(grep -m1 '"tag_name"' "$TMP/release.json" | sed -E 's/.*"v?([^\"]+)".*/\1/' || true)"
-    [ -n "$LATEST" ] && VER="$LATEST"
+    case "$LATEST" in
+      [0-9]*.[0-9]*.[0-9]*) VER="$LATEST" ;;
+    esac
   fi
-  get "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-${ARCH}.tar.gz" "$TMP/sing-box.tar.gz"
+
+  FLAVOR=""
+  if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "arm64" ]; then
+    if [ -f /etc/alpine-release ] || (ldd --version 2>&1 | grep -qi musl); then
+      FLAVOR="-musl"
+    else
+      FLAVOR="-glibc"
+    fi
+  fi
+
+  PKG="sing-box-${VER}-linux-${ARCH}${FLAVOR}.tar.gz"
+  URL="https://github.com/SagerNet/sing-box/releases/download/v${VER}/${PKG}"
+  if ! get "$URL" "$TMP/sing-box.tar.gz" 2>/dev/null; then
+    # Fallback for architectures without libc-specific builds.
+    PKG="sing-box-${VER}-linux-${ARCH}.tar.gz"
+    URL="https://github.com/SagerNet/sing-box/releases/download/v${VER}/${PKG}"
+    get "$URL" "$TMP/sing-box.tar.gz" || { echo "sing-box 下载失败" >&2; exit 1; }
+  fi
+
   tar -xzf "$TMP/sing-box.tar.gz" -C "$TMP"
   SB="$(find "$TMP" -type f -name sing-box | head -n1)"
   [ -n "$SB" ] || { echo "sing-box 解压失败" >&2; exit 1; }
   cp "$SB" "$BIN"
   chmod 755 "$BIN"
+
+  # The generic amd64/arm64 package may include libcronet.so. Keep it beside
+  # the binary if present so the executable can start correctly.
+  CRONET="$(find "$TMP" -type f -name libcronet.so | head -n1 || true)"
+  [ -z "$CRONET" ] || cp "$CRONET" /usr/local/bin/libcronet.so
+
+  if ! "$BIN" version >/dev/null 2>"$TMP/version.err"; then
+    cat "$TMP/version.err" >&2
+    echo "sing-box 无法运行" >&2
+    exit 1
+  fi
 }
 
 install_singbox
@@ -93,20 +130,26 @@ cat > "$CONF" <<EOF_CONFIG
       "listen": "::",
       "listen_port": $PORT,
       "users": [{"name": "default", "password": "$PASSWORD"}],
-      "padding_scheme": ["stop=2", "0=100-200", "1=100-200"],
       "tls": {
         "enabled": true,
-        "alpn": ["http/1.1"],
+        "server_name": "$SNI",
         "certificate_path": "$CERT",
         "key_path": "$KEY"
       }
     }
   ],
-  "outbounds": [{"type": "direct", "tag": "direct"}]
+  "outbounds": [{"type": "direct", "tag": "direct"}],
+  "route": {"final": "direct"}
 }
 EOF_CONFIG
 
-"$BIN" check -c "$CONF" >/dev/null 2>&1 || { echo "sing-box 配置校验失败" >&2; exit 1; }
+if ! "$BIN" check -c "$CONF" >"$TMP/check.out" 2>"$TMP/check.err"; then
+  cat "$TMP/check.err" >&2
+  cat "$TMP/check.out" >&2
+  echo "sing-box 配置校验失败" >&2
+  exit 1
+fi
+
 cat > "$STATE" <<EOF_STATE
 PASSWORD='$PASSWORD'
 EOF_STATE
