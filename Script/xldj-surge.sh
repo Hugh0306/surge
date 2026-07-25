@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Upstream is an interactive manager. Do not run this wrapper through `curl | bash`.
+if [ ! -t 0 ]; then
+    echo "[错误] 这是交互式脚本，不能使用 curl | bash 管道运行。" >&2
+    echo "[提示] 请先下载文件，再执行：bash /tmp/xldj.sh" >&2
+    exit 1
+fi
+
 UPSTREAM_URL="https://raw.githubusercontent.com/shini74744/Shliixg/refs/heads/main/xldj.sh"
 TMP_DIR="$(mktemp -d /tmp/xldj-surge.XXXXXX)"
 SRC="$TMP_DIR/xldj.sh"
@@ -35,7 +42,6 @@ _show_node_link() {
 
     case "$type" in
         "vless-reality")
-            # Surge does not natively support VLESS; keep upstream share URI unchanged.
             local uuid="$1" pk="$3" sid="$4" flow="${5:-xtls-rprx-vision}"
             local sni
             sni=$(echo "$2" | xargs)
@@ -43,14 +49,12 @@ _show_node_link() {
             url="vless://${uuid}@${link_ip}:${port}?security=reality&encryption=none&pbk=$(_url_encode "${pk}")&fp=chrome&type=tcp&flow=${flow}&sni=${sni}&sid=${sid}#$(_url_encode "$name")"
             ;;
         "vless-ws-tls")
-            # Surge does not natively support VLESS; keep upstream share URI unchanged.
             local uuid="$1" sni="${2:-$DEFAULT_SNI}" ws_path="$3" skip_verify="${4:-false}"
             local insecure_param=""
             [[ "$skip_verify" == "true" ]] && insecure_param="&insecure=1&allowInsecure=1"
             url="vless://${uuid}@${link_ip}:${port}?security=tls&encryption=none&type=ws&host=${sni}&path=$(_url_encode "$ws_path")&sni=${sni}${insecure_param}#$(_url_encode "$name")"
             ;;
         "vless-tcp")
-            # Surge does not natively support VLESS; keep upstream share URI unchanged.
             local uuid="$1"
             url="vless://${uuid}@${link_ip}:${port}?encryption=none&type=tcp#$(_url_encode "$name")"
             ;;
@@ -81,7 +85,6 @@ _show_node_link() {
             url="${name} = ss, ${link_ip}, ${port}, encrypt-method=${method}, password=${pw}, shadow-tls-password=${spw}, shadow-tls-sni=${sni}, shadow-tls-version=3"
             ;;
         "vless-ws")
-            # Surge does not natively support VLESS; keep upstream share URI unchanged.
             local uuid="$1" ws_path="$2"
             url="vless://${uuid}@${link_ip}:443?encryption=none&security=tls&type=ws&host=${link_ip}&path=$(_url_encode "$ws_path")&sni=${link_ip}#$(_url_encode "$name")"
             ;;
@@ -101,7 +104,6 @@ _show_node_link() {
         echo -e "${CYAN}${url}${NC}"
         echo -e "${YELLOW}═════════════════════════════════════════════════${NC}"
 
-        # Keep upstream persistence logic unchanged; only the stored output string differs.
         if [ -n "$tag" ] && [ "$tag" != "null" ]; then
             if [[ "$tag" == argo-* ]]; then
                 _atomic_modify_json "$ARGO_METADATA_FILE" ". + { \"$tag\": ((.[\"$tag\"] // {}) + { \"share_link\": \"$url\" }) }"
@@ -115,13 +117,10 @@ _show_node_link() {
 EOF_SURGE_FUNCTION
 
 awk 'f || /^_show_cdn_guidance\(\) \{/{f=1; print}' "$SRC" >> "$PATCHED"
-chmod +x "$PATCHED"
 
-# The upstream script is interactive. When this wrapper itself is launched by
-# `curl ... | bash`, stdin becomes the pipe and reaches EOF, which makes the
-# upstream menu redraw in a tight loop. Reattach stdin to the controlling TTY.
-if [ -r /dev/tty ]; then
-    bash "$PATCHED" "$@" </dev/tty
-else
-    bash "$PATCHED" "$@"
-fi
+# Upstream main menu redraws forever when `read` receives EOF. Convert that case
+# into a clean exit so a broken terminal can never produce a flashing loop.
+sed -i 's@^[[:space:]]*read -p "  请输入选项 \[0-18\]: " choice@        if ! read -r -p "  请输入选项 [0-18]: " choice; then echo; exit 0; fi@' "$PATCHED" || true
+
+chmod +x "$PATCHED"
+bash "$PATCHED" "$@"
