@@ -116,4 +116,12 @@ EOF_SURGE_FUNCTION
 
 awk 'f || /^_show_cdn_guidance\(\) \{/{f=1; print}' "$SRC" >> "$PATCHED"
 chmod +x "$PATCHED"
-bash "$PATCHED" "$@"
+
+# The upstream script is interactive. When this wrapper itself is launched by
+# `curl ... | bash`, stdin becomes the pipe and reaches EOF, which makes the
+# upstream menu redraw in a tight loop. Reattach stdin to the controlling TTY.
+if [ -r /dev/tty ]; then
+    bash "$PATCHED" "$@" </dev/tty
+else
+    bash "$PATCHED" "$@"
+fi
