@@ -1,102 +1,176 @@
-#!/usr/bin/env bash
-set -u
-set -o pipefail
+#!/bin/sh
+set -eu
 
-# Hugh0306 AnyTLS one-shot installer
-# Logic: install/update sing-box core [14] -> add node [1] -> AnyTLS [5]
-# Defaults: AnyTLS mode, default server IP, port 61368, default SNI www.amd.com,
-#           random password, node name test, auto self-signed cert.
-
-PATCHED_SB_URL="https://raw.githubusercontent.com/Hugh0306/surge/main/Script/singbox-surge.sh"
-TARGET="/usr/local/bin/sb"
 PORT="${1:-61368}"
-NODE_NAME="${2:-test}"
+NAME="${2:-test}"
+SNI="${3:-www.amd.com}"
+DIR="/etc/sing-box"
+BIN="/usr/local/bin/sing-box"
+CONF="$DIR/config.json"
+STATE="$DIR/anytls.env"
+CERT="$DIR/cert.pem"
+KEY="$DIR/key.pem"
+TMP="/tmp/anytls-lite.$$"
 
-if [ "${EUID:-$(id -u)}" -ne 0 ]; then
-  echo "[错误] 请使用 root 权限运行：sudo bash $0" >&2
-  exit 1
-fi
+[ "$(id -u)" = "0" ] || { echo "需要 root 权限" >&2; exit 1; }
+case "$PORT" in *[!0-9]*|'') echo "端口无效" >&2; exit 1 ;; esac
+[ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ] || { echo "端口无效" >&2; exit 1; }
+mkdir -p "$TMP" "$DIR"
+trap 'rm -rf "$TMP"' EXIT INT TERM
 
-if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -lt 1024 ] || [ "$PORT" -gt 65535 ]; then
-  echo "[错误] 端口无效：$PORT。端口范围应为 1024-65535。" >&2
-  exit 1
-fi
-
-if [ -z "$NODE_NAME" ]; then
-  NODE_NAME="test"
-fi
-
-download() {
-  local url="$1" out="$2"
-  if command -v curl >/dev/null 2>&1; then
-    curl -LfsS "$url" -o "$out" && return 0
+get() {
+  if command -v curl >/dev/null 2>&1; then curl -LfsS --connect-timeout 10 "$1" -o "$2"
+  elif command -v wget >/dev/null 2>&1; then wget -q -T 15 "$1" -O "$2"
+  else echo "缺少 curl/wget" >&2; exit 1
   fi
-  if command -v wget >/dev/null 2>&1; then
-    wget -q "$url" -O "$out" && return 0
-  fi
-  echo "[错误] curl/wget 均不可用，无法下载脚本。" >&2
-  return 1
 }
 
-strip_ansi() {
-  sed -E $'s/\x1B\[[0-9;?]*[ -/]*[@-~]//g'
+need_openssl() {
+  command -v openssl >/dev/null 2>&1 && return 0
+  if command -v apk >/dev/null 2>&1; then
+    apk add --no-cache openssl >/dev/null 2>&1
+  elif command -v apt-get >/dev/null 2>&1; then
+    apt-get update -qq >/dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends openssl >/dev/null 2>&1
+  elif command -v dnf >/dev/null 2>&1; then
+    dnf -y -q install openssl >/dev/null 2>&1
+  elif command -v yum >/dev/null 2>&1; then
+    yum -y -q install openssl >/dev/null 2>&1
+  else
+    echo "缺少 openssl，且无法自动安装" >&2; exit 1
+  fi
 }
 
-TMP_LOADER="$(mktemp /tmp/anytls-sb-loader.XXXXXX)"
-TMP_OUTPUT="$(mktemp /tmp/anytls-output.XXXXXX)"
-trap 'rm -f "$TMP_LOADER" "$TMP_OUTPUT"' EXIT
+install_singbox() {
+  ARCH="$(uname -m)"
+  case "$ARCH" in
+    x86_64|amd64) ARCH=amd64 ;;
+    aarch64|arm64) ARCH=arm64 ;;
+    armv7l|armv7) ARCH=armv7 ;;
+    *) echo "不支持的架构: $ARCH" >&2; exit 1 ;;
+  esac
 
-echo "[信息] 下载 Surge 输出增强版 singbox 脚本..."
-download "$PATCHED_SB_URL" "$TMP_LOADER" || exit 1
-chmod +x "$TMP_LOADER"
+  VER="1.13.8"
+  if get "https://api.github.com/repos/SagerNet/sing-box/releases/latest" "$TMP/release.json" 2>/dev/null; then
+    LATEST="$(grep -m1 '"tag_name"' "$TMP/release.json" | sed -E 's/.*"v?([^\"]+)".*/\1/' || true)"
+    [ -n "$LATEST" ] && VER="$LATEST"
+  fi
+  get "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-${ARCH}.tar.gz" "$TMP/sing-box.tar.gz"
+  tar -xzf "$TMP/sing-box.tar.gz" -C "$TMP"
+  SB="$(find "$TMP" -type f -name sing-box | head -n1)"
+  [ -n "$SB" ] || { echo "sing-box 解压失败" >&2; exit 1; }
+  cp "$SB" "$BIN"
+  chmod 755 "$BIN"
+}
 
-echo "[信息] 自动执行：14 -> 1 -> 5 -> AnyTLS:${PORT}，节点名 ${NODE_NAME}，其余选项使用默认值。"
+install_singbox
+need_openssl
 
-# Input mapping:
-# 14        main menu: install/update sing-box core
-# x1        x consumed by "press any key", then 1 enters add-node menu
-# 5         add-node menu: AnyTLS
-# blank     AnyTLS mode: default 1 = AnyTLS
-# blank     server IP: default current public IP
-# PORT      listen port
-# blank     SNI: default www.amd.com
-# blank     password/UUID: random
-# NODE_NAME node name: default test
-# blank     cert type: default auto self-signed
-# x0        x consumed by "press any key", then 0 exits main menu
+PASSWORD=""
+if [ -f "$STATE" ]; then
+  PASSWORD="$(sed -n "s/^PASSWORD='\(.*\)'$/\1/p" "$STATE" | head -n1)"
+fi
+PASSWORD="${PASSWORD:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || true)}"
+[ -n "$PASSWORD" ] || PASSWORD="$(openssl rand -hex 16)"
+
+if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
+  if ! openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650 \
+      -subj "/CN=$SNI" -addext "subjectAltName=DNS:$SNI" \
+      -keyout "$KEY" -out "$CERT" >/dev/null 2>&1; then
+    openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650 \
+      -subj "/CN=$SNI" -keyout "$KEY" -out "$CERT" >/dev/null 2>&1
+  fi
+  chmod 600 "$KEY"
+fi
+
+cat > "$CONF" <<EOF_CONFIG
 {
-  printf '14\n'
-  printf 'x1\n'
-  printf '5\n'
-  printf '\n'
-  printf '\n'
-  printf '%s\n' "$PORT"
-  printf '\n'
-  printf '\n'
-  printf '%s\n' "$NODE_NAME"
-  printf '\n'
-  printf 'x0\n'
-} | bash "$TMP_LOADER" 2>&1 | tee "$TMP_OUTPUT"
+  "log": {"level": "warn"},
+  "inbounds": [
+    {
+      "type": "anytls",
+      "tag": "anytls-in",
+      "listen": "::",
+      "listen_port": $PORT,
+      "users": [{"name": "default", "password": "$PASSWORD"}],
+      "padding_scheme": ["stop=2", "0=100-200", "1=100-200"],
+      "tls": {
+        "enabled": true,
+        "alpn": ["http/1.1"],
+        "certificate_path": "$CERT",
+        "key_path": "$KEY"
+      }
+    }
+  ],
+  "outbounds": [{"type": "direct", "tag": "direct"}]
+}
+EOF_CONFIG
 
-CLEAN_OUTPUT="$(strip_ansi < "$TMP_OUTPUT")"
-SURGE_LINE="$(printf '%s\n' "$CLEAN_OUTPUT" | grep -E '^[^=]+ = anytls, ' | tail -n 1 || true)"
-RAW_LINK="$(printf '%s\n' "$CLEAN_OUTPUT" | grep -E '^anytls://' | tail -n 1 || true)"
+"$BIN" check -c "$CONF" >/dev/null 2>&1 || { echo "sing-box 配置校验失败" >&2; exit 1; }
+cat > "$STATE" <<EOF_STATE
+PASSWORD='$PASSWORD'
+EOF_STATE
+chmod 600 "$STATE"
 
-printf '\n'
-echo "════════════════ AnyTLS 输出结果 ════════════════"
-if [ -n "$SURGE_LINE" ]; then
-  echo "$SURGE_LINE"
-  echo "══════════════════════════════════════════════════"
-  exit 0
+if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+  cat > /etc/systemd/system/sing-box.service <<EOF_SYSTEMD
+[Unit]
+Description=sing-box AnyTLS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=$BIN run -c $CONF
+Restart=on-failure
+RestartSec=2
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target
+EOF_SYSTEMD
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl enable sing-box >/dev/null 2>&1
+  systemctl restart sing-box >/dev/null 2>&1
+elif command -v rc-service >/dev/null 2>&1; then
+  cat > /etc/init.d/sing-box <<EOF_OPENRC
+#!/sbin/openrc-run
+command="$BIN"
+command_args="run -c $CONF"
+command_background="yes"
+pidfile="/run/sing-box.pid"
+output_log="/dev/null"
+error_log="/dev/null"
+depend() { need net; }
+EOF_OPENRC
+  chmod +x /etc/init.d/sing-box
+  rc-update add sing-box default >/dev/null 2>&1 || true
+  rc-service sing-box restart >/dev/null 2>&1 || rc-service sing-box start >/dev/null 2>&1
+else
+  PIDFILE="/run/sing-box.pid"
+  if [ -s "$PIDFILE" ]; then kill "$(cat "$PIDFILE")" >/dev/null 2>&1 || true; fi
+  nohup "$BIN" run -c "$CONF" >/dev/null 2>&1 &
+  echo $! > "$PIDFILE"
 fi
 
-if [ -n "$RAW_LINK" ]; then
-  echo "[注意] 未提取到 Surge 单行格式，仅检测到原始 AnyTLS 链接："
-  echo "$RAW_LINK"
-  echo "══════════════════════════════════════════════════"
-  exit 0
+sleep 1
+if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+  systemctl is-active --quiet sing-box || { echo "sing-box 启动失败" >&2; exit 1; }
+elif command -v rc-service >/dev/null 2>&1; then
+  rc-service sing-box status >/dev/null 2>&1 || { echo "sing-box 启动失败" >&2; exit 1; }
+else
+  kill -0 "$(cat /run/sing-box.pid)" >/dev/null 2>&1 || { echo "sing-box 启动失败" >&2; exit 1; }
 fi
 
-echo "[错误] 未检测到 AnyTLS 节点输出。请检查上方日志，常见原因：端口被占用、核心安装失败、网络无法访问 GitHub。" >&2
-echo "══════════════════════════════════════════════════"
-exit 1
+IP=""
+if command -v curl >/dev/null 2>&1; then
+  IP="$(curl -4fsS --connect-timeout 5 https://api.ipify.org 2>/dev/null || true)"
+elif command -v wget >/dev/null 2>&1; then
+  IP="$(wget -q -T 8 -O- https://api.ipify.org 2>/dev/null || true)"
+fi
+[ -n "$IP" ] || IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+[ -n "$IP" ] || { echo "无法获取服务器 IP" >&2; exit 1; }
+
+printf '%s = anytls, %s, %s, password=%s, sni=%s, skip-cert-verify=true, tfo=true, udp-relay=true\n' \
+  "$NAME" "$IP" "$PORT" "$PASSWORD" "$SNI"
