@@ -116,4 +116,4 @@ EOF_SURGE_FUNCTION
 
 awk 'f || /^_show_cdn_guidance\(\) \{/{f=1; print}' "$SRC" >> "$PATCHED"
 chmod +x "$PATCHED"
-exec bash "$PATCHED" "$@"
+bash "$PATCHED" "$@"
