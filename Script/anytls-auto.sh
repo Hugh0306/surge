@@ -55,7 +55,6 @@ install_singbox() {
     *) echo "不支持的架构: $ARCH" >&2; exit 1 ;;
   esac
 
-  # Stable fallback; GitHub API is only used to discover a newer stable release.
   VER="1.13.12"
   if get "https://api.github.com/repos/SagerNet/sing-box/releases/latest" "$TMP/release.json" 2>/dev/null; then
     LATEST="$(grep -m1 '"tag_name"' "$TMP/release.json" | sed -E 's/.*"v?([^\"]+)".*/\1/' || true)"
@@ -76,7 +75,6 @@ install_singbox() {
   PKG="sing-box-${VER}-linux-${ARCH}${FLAVOR}.tar.gz"
   URL="https://github.com/SagerNet/sing-box/releases/download/v${VER}/${PKG}"
   if ! get "$URL" "$TMP/sing-box.tar.gz" 2>/dev/null; then
-    # Fallback for architectures without libc-specific builds.
     PKG="sing-box-${VER}-linux-${ARCH}.tar.gz"
     URL="https://github.com/SagerNet/sing-box/releases/download/v${VER}/${PKG}"
     get "$URL" "$TMP/sing-box.tar.gz" || { echo "sing-box 下载失败" >&2; exit 1; }
@@ -88,8 +86,6 @@ install_singbox() {
   cp "$SB" "$BIN"
   chmod 755 "$BIN"
 
-  # The generic amd64/arm64 package may include libcronet.so. Keep it beside
-  # the binary if present so the executable can start correctly.
   CRONET="$(find "$TMP" -type f -name libcronet.so | head -n1 || true)"
   [ -z "$CRONET" ] || cp "$CRONET" /usr/local/bin/libcronet.so
 
@@ -100,15 +96,28 @@ install_singbox() {
   fi
 }
 
-install_singbox
+# 已安装且可正常运行时直接复用，避免重复下载核心。
+if [ ! -x "$BIN" ] || ! "$BIN" version >/dev/null 2>&1; then
+  install_singbox
+fi
 need_openssl
 
-PASSWORD=""
+# 每次执行都生成全新的密码，不再复用 anytls.env 中的旧密码。
+OLD_PASSWORD=""
 if [ -f "$STATE" ]; then
-  PASSWORD="$(sed -n "s/^PASSWORD='\(.*\)'$/\1/p" "$STATE" | head -n1)"
+  OLD_PASSWORD="$(sed -n "s/^PASSWORD='\(.*\)'$/\1/p" "$STATE" | head -n1)"
 fi
-PASSWORD="${PASSWORD:-$(cat /proc/sys/kernel/random/uuid 2>/dev/null || true)}"
-[ -n "$PASSWORD" ] || PASSWORD="$(openssl rand -hex 16)"
+
+PASSWORD=""
+i=0
+while [ -z "$PASSWORD" ] || [ "$PASSWORD" = "$OLD_PASSWORD" ]; do
+  PASSWORD="$(cat /proc/sys/kernel/random/uuid 2>/dev/null || true)"
+  [ -n "$PASSWORD" ] || PASSWORD="$("$BIN" generate uuid 2>/dev/null || true)"
+  [ -n "$PASSWORD" ] || PASSWORD="$(openssl rand -hex 16)"
+  i=$((i + 1))
+  [ "$i" -lt 5 ] || break
+done
+[ -n "$PASSWORD" ] || { echo "密码生成失败" >&2; exit 1; }
 
 if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
   if ! openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650 \
