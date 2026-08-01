@@ -50,11 +50,11 @@ http:
 
 script-providers:
   WeatherKit.api.v1.availability.response:
-    url: https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit/v3.2.0-beta4/response.bundle.js
+    url: https://github.com/NSRingo/WeatherKit/releases/download/v3.2.0-beta4/response.bundle.js
     interval: 86400
   WeatherKit.api.v1.weatherAlerts.response:
-    url: https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit/v3.2.0-beta4/response.bundle.js
+    url: https://github.com/NSRingo/WeatherKit/releases/download/v3.2.0-beta4/response.bundle.js
     interval: 86400
   WeatherKit.api.v2.weather.response:
-    url: https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit/v3.2.0-beta4/response.bundle.js
+    url: https://github.com/NSRingo/WeatherKit/releases/download/v3.2.0-beta4/response.bundle.js
     interval: 86400
