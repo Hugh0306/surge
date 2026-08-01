@@ -1,0 +1,64 @@
+name: Localize WeatherKit v3.2.0-beta3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/localize-weatherkit-beta3.yml
+
+permissions:
+  contents: write
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build self-hosted WeatherKit files
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='Module/WeatherKit/v3.2.0-beta3'
+          dst='Module/WeatherKit'
+          old='https://github.com/NSRingo/WeatherKit/releases/download/v3.2.0-beta3'
+          new='https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit'
+
+          cp "$src/response.bundle.js" "$dst/response.bundle.js"
+          cp "$src/request.bundle.js" "$dst/request.bundle.js"
+          cp "$src/iRingo.WeatherKit.sgmodule" "$dst/WeatherKit.sgmodule"
+          cp "$src/iRingo.WeatherKit.plugin" "$dst/WeatherKit.plugin"
+          cp "$src/iRingo.WeatherKit.snippet" "$dst/WeatherKit.snippet"
+          cp "$src/iRingo.WeatherKit.stoverride" "$dst/WeatherKit.stoverride"
+
+          sed -i "s#${old}/response.bundle.js#${new}/response.bundle.js#g" \
+            "$dst/WeatherKit.sgmodule" "$dst/WeatherKit.plugin" \
+            "$dst/WeatherKit.snippet" "$dst/WeatherKit.stoverride"
+          sed -i "s#${old}/request.bundle.js#${new}/request.bundle.js#g" \
+            "$dst/WeatherKit.sgmodule" "$dst/WeatherKit.plugin" \
+            "$dst/WeatherKit.snippet" "$dst/WeatherKit.stoverride"
+
+          cat > "$dst/README.md" <<'EOF'
+# WeatherKit v3.2.0-beta3
+
+Self-hosted mirror of NSRingo/WeatherKit v3.2.0-beta3.
+
+- Surge: `WeatherKit.sgmodule`
+- Loon: `WeatherKit.plugin`
+- Shadowrocket: `WeatherKit.snippet`
+- Stash: `WeatherKit.stoverride`
+- Scripts: `request.bundle.js`, `response.bundle.js`
+
+The original authors and project homepage are preserved in each module file.
+EOF
+
+      - name: Commit localized files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/localize-weatherkit-beta3.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Module/WeatherKit .github/workflows/localize-weatherkit-beta3.yml
+          git commit -m 'Localize WeatherKit beta3 module and scripts'
+          git push
