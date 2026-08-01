@@ -1,0 +1,73 @@
+name: Mirror WeatherKit v3.2.0-beta3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mirror-weatherkit-beta3.yml
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag='v3.2.0-beta3'
+          api="https://api.github.com/repos/NSRingo/WeatherKit/releases/tags/${tag}"
+          out="Module/WeatherKit/${tag}"
+          mkdir -p "$out" Module/WeatherKit
+
+          curl -LfsS "$api" -o /tmp/weatherkit-release.json
+          jq -r '.body // ""' /tmp/weatherkit-release.json > "$out/RELEASE.md"
+          jq -r '[.tag_name, .name, .published_at, .html_url] | @tsv' /tmp/weatherkit-release.json > "$out/release-info.tsv"
+          jq -r '.assets[] | [.name, .browser_download_url, (.size|tostring), (.digest // "")] | @tsv' /tmp/weatherkit-release.json > "$out/assets.tsv"
+
+          while IFS=$'\t' read -r name url size digest; do
+            [ -n "$name" ] || continue
+            echo "Downloading $name"
+            curl -LfsS "$url" -o "$out/$name"
+          done < "$out/assets.tsv"
+
+          # Stable convenience paths for Surge/Loon/Stash module files.
+          find "$out" -maxdepth 1 -type f | while read -r file; do
+            base="$(basename "$file")"
+            case "$base" in
+              *.sgmodule)
+                cp "$file" "Module/WeatherKit/WeatherKit.sgmodule"
+                ;;
+              *.plugin)
+                cp "$file" "Module/WeatherKit/WeatherKit.plugin"
+                ;;
+              *.stoverride)
+                cp "$file" "Module/WeatherKit/WeatherKit.stoverride"
+                ;;
+            esac
+          done
+
+          {
+            echo '# WeatherKit v3.2.0-beta3 Mirror'
+            echo
+            echo 'Source: NSRingo/WeatherKit release v3.2.0-beta3'
+            echo
+            echo '## Mirrored assets'
+            echo
+            awk -F '\t' '{printf "- `%s` (%s bytes)\n", $1, $3}' "$out/assets.tsv"
+          } > Module/WeatherKit/README.md
+
+      - name: Commit mirrored files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/mirror-weatherkit-beta3.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Module/WeatherKit .github/workflows/mirror-weatherkit-beta3.yml
+          git commit -m 'Mirror WeatherKit v3.2.0-beta3 release assets'
+          git push
