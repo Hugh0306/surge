@@ -1,0 +1,45 @@
+name: Repair WeatherKit beta4 module
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/repair-weatherkit-beta4.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild fixed Surge module
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='Module/WeatherKit/v3.2.0-beta4/iRingo.WeatherKit.sgmodule'
+          dst='Module/WeatherKit/WeatherKit.sgmodule'
+          old='https://github.com/NSRingo/WeatherKit/releases/download/v3.2.0-beta4'
+          new='https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit/v3.2.0-beta4'
+
+          cp "$src" "$dst"
+          sed -i "s#${old}#${new}#g" "$dst"
+          sed -i 's|^#!desc =.*$|#!desc = WeatherKit 天气增强|' "$dst"
+
+          grep -q '^#!desc = WeatherKit 天气增强$' "$dst"
+          grep -q '^#!version = 3.2.0-beta4$' "$dst"
+          ! grep -q '^!desc =\.\*\$' "$dst"
+
+          rm -f .github/workflows/repair-weatherkit-beta4.yml
+
+      - name: Commit repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Repair WeatherKit beta4 Surge module'
+          git push
