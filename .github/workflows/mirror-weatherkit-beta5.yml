@@ -1,0 +1,115 @@
+name: Mirror WeatherKit v3.2.0-beta5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mirror-weatherkit-beta5.yml
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and localize release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag='v3.2.0-beta5'
+          dst="Module/WeatherKit/${tag}"
+          api="https://api.github.com/repos/NSRingo/WeatherKit/releases/tags/${tag}"
+
+          mkdir -p "$dst"
+          curl -LfsS \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'User-Agent: Hugh0306-WeatherKit-Mirror' \
+            "$api" -o /tmp/weatherkit-release.json
+
+          test "$(jq -r '.tag_name // empty' /tmp/weatherkit-release.json)" = "$tag"
+          jq -r '.body // ""' /tmp/weatherkit-release.json > "$dst/RELEASE.md"
+          jq -r '.assets[] | [.name,.browser_download_url,(.size|tostring),(.digest // "")] | @tsv' \
+            /tmp/weatherkit-release.json > "$dst/assets.tsv"
+
+          while IFS=$'\t' read -r name url size digest; do
+            [ -n "$name" ] || continue
+            curl -LfsS --retry 3 --retry-delay 2 "$url" -o "$dst/$name"
+            actual_size="$(wc -c < "$dst/$name" | tr -d ' ')"
+            [ "$actual_size" = "$size" ] || {
+              echo "Size mismatch: $name expected=$size actual=$actual_size" >&2
+              exit 1
+            }
+            if [[ "$digest" == sha256:* ]]; then
+              expected="${digest#sha256:}"
+              actual="$(sha256sum "$dst/$name" | awk '{print $1}')"
+              [ "$actual" = "$expected" ] || {
+                echo "SHA256 mismatch: $name" >&2
+                exit 1
+              }
+            fi
+          done < "$dst/assets.tsv"
+
+          test -s "$dst/iRingo.WeatherKit.sgmodule"
+          test -s "$dst/response.bundle.js"
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          tag = "v3.2.0-beta5"
+          base = Path("Module/WeatherKit")
+          src_dir = base / tag
+          upstream = f"https://github.com/NSRingo/WeatherKit/releases/download/{tag}"
+          self_hosted = f"https://raw.githubusercontent.com/Hugh0306/surge/main/Module/WeatherKit/{tag}"
+
+          mapping = {
+              "iRingo.WeatherKit.sgmodule": "WeatherKit.sgmodule",
+              "iRingo.WeatherKit.plugin": "WeatherKit.plugin",
+              "iRingo.WeatherKit.snippet": "WeatherKit.snippet",
+              "iRingo.WeatherKit.stoverride": "WeatherKit.stoverride",
+          }
+
+          for src_name, dst_name in mapping.items():
+              src = src_dir / src_name
+              if not src.exists():
+                  continue
+              text = src.read_text(encoding="utf-8")
+              text = text.replace(upstream, self_hosted)
+              if src_name.endswith(".sgmodule"):
+                  lines = text.splitlines()
+                  for i, line in enumerate(lines):
+                      if line.startswith("#!desc ="):
+                          lines[i] = "#!desc = WeatherKit 天气增强"
+                          break
+                  text = "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+              (base / dst_name).write_text(text, encoding="utf-8")
+
+          for script in ("request.bundle.js", "response.bundle.js"):
+              src = src_dir / script
+              if src.exists():
+                  (base / script).write_bytes(src.read_bytes())
+
+          (base / "README.md").write_text(
+              "# WeatherKit v3.2.0-beta5\n\n"
+              "Self-hosted mirror of NSRingo/WeatherKit v3.2.0-beta5.\n\n"
+              "- Surge: `WeatherKit.sgmodule`\n"
+              "- Loon: `WeatherKit.plugin`\n"
+              "- Shadowrocket: `WeatherKit.snippet`\n"
+              "- Stash: `WeatherKit.stoverride`\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Commit mirrored files
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/mirror-weatherkit-beta5.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Module/WeatherKit .github/workflows/mirror-weatherkit-beta5.yml
+          git commit -m 'Update WeatherKit to v3.2.0-beta5'
+          git push
