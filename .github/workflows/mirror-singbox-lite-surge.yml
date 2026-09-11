@@ -1,0 +1,306 @@
+name: Mirror singbox-lite for Surge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mirror-singbox-lite-surge.yml
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch upstream scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          dst="Script/singbox-lite"
+          mkdir -p "$dst"
+          base="https://raw.githubusercontent.com/0xdabiaoge/singbox-lite/main"
+          for f in singbox.sh advanced_relay.sh parser.sh xray_manager.sh README.md; do
+            curl -fL --retry 3 --connect-timeout 15 "$base/$f" -o "$dst/$f"
+          done
+          chmod +x "$dst"/*.sh
+
+      - name: Patch Surge output and self-host URLs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('Script/singbox-lite')
+          upstream = 'https://raw.githubusercontent.com/0xdabiaoge/singbox-lite/main'
+          mirror = 'https://raw.githubusercontent.com/Hugh0306/surge/main/Script/singbox-lite'
+
+          # All runtime child-script/update URLs point to this repository.
+          for p in root.iterdir():
+              if p.is_file():
+                  text = p.read_text(encoding='utf-8')
+                  text = text.replace(upstream, mirror)
+                  p.write_text(text, encoding='utf-8')
+
+          main = root / 'singbox.sh'
+          text = main.read_text(encoding='utf-8')
+
+          new_show = r'''_show_node_link() {
+              local type="$1"
+              local name="$2"
+              local link_ip="$3"
+              local port="$4"
+              local tag="$5"
+              local metadata_ip="$link_ip"
+              metadata_ip="${metadata_ip#[}"
+              metadata_ip="${metadata_ip%]}"
+              if [[ "$link_ip" == *":"* ]] && [[ "$link_ip" != "["* ]]; then
+                  link_ip="[${link_ip}]"
+              fi
+              shift 5
+
+              local url=""
+              local surge_compatible=false
+              local surge_name="${name//=/-}"
+              surge_name="${surge_name//$'\n'/ }"
+
+              case "$type" in
+                  "vless-reality")
+                      local uuid="$1" pk="$3" sid="$4" flow="${5:-xtls-rprx-vision}"
+                      local sni=$(echo "$2" | xargs)
+                      [[ -z "$sni" ]] && sni="$DEFAULT_SNI"
+                      url="vless://${uuid}@${link_ip}:${port}?security=reality&encryption=none&pbk=$(_url_encode "${pk}")&fp=chrome&type=tcp&flow=${flow}&sni=${sni}&sid=${sid}#$(_url_encode "$name")"
+                      ;;
+                  "vless-ws-tls")
+                      local uuid="$1" sni="${2:-$DEFAULT_SNI}" ws_path="$3" skip_verify="$4" cert_path="$5"
+                      local insecure_param=$(_tls_insecure_params "$skip_verify" "$cert_path")
+                      url="vless://${uuid}@${link_ip}:${port}?security=tls&encryption=none&type=ws&host=${sni}&path=$(_url_encode "$ws_path")&sni=${sni}${insecure_param}#$(_url_encode "$name")"
+                      ;;
+                  "vless-grpc-tls")
+                      local uuid="$1" sni="${2:-$DEFAULT_SNI}" service_name="$3" skip_verify="$4" cert_path="$5"
+                      local insecure_param=$(_tls_insecure_params "$skip_verify" "$cert_path")
+                      url="vless://${uuid}@${link_ip}:${port}?security=tls&encryption=none&type=grpc&serviceName=$(_url_encode "$service_name")&authority=${sni}&sni=${sni}${insecure_param}#$(_url_encode "$name")"
+                      ;;
+                  "vless-tcp")
+                      local uuid="$1"
+                      url="vless://${uuid}@${link_ip}:${port}?encryption=none&type=tcp#$(_url_encode "$name")"
+                      ;;
+                  "trojan-ws-tls")
+                      local password="$1" sni="${2:-$DEFAULT_SNI}" ws_path="$3" skip_verify="$4" cert_path="$5"
+                      url="${surge_name} = trojan, ${link_ip}, ${port}, password=${password}, sni=${sni}, ws=true, ws-path=${ws_path}, ws-headers=Host:${sni}"
+                      [[ "$skip_verify" == "true" ]] && url+=", skip-cert-verify=true"
+                      surge_compatible=true
+                      ;;
+                  "hysteria2")
+                      local password="$1" sni="${2:-$DEFAULT_SNI}" obfs_password="$3" port_hopping="$4"
+                      url="${surge_name} = hysteria2, ${link_ip}, ${port}, password=${password}, sni=${sni}, skip-cert-verify=true"
+                      [[ -n "$port_hopping" ]] && url+=", port-hopping=${port_hopping}"
+                      if [[ -n "$obfs_password" ]]; then
+                          url+=", salamander-password=${obfs_password}"
+                          _warn "该 Hysteria2 启用了 Salamander；Surge 官方目前将 salamander-password 标注为 Mac 6.4.3+。"
+                      fi
+                      surge_compatible=true
+                      ;;
+                  "tuic")
+                      local uuid="$1" password="$2" sni="${3:-$DEFAULT_SNI}"
+                      url="${surge_name} = tuic-v5, ${link_ip}, ${port}, uuid=${uuid}, password=${password}, sni=${sni}, alpn=h3, skip-cert-verify=true"
+                      surge_compatible=true
+                      ;;
+                  "anytls")
+                      local password="$1" sni="${2:-$DEFAULT_SNI}" skip_verify="$3" cert_path="$4"
+                      url="${surge_name} = anytls, ${link_ip}, ${port}, password=${password}, sni=${sni}"
+                      [[ "$skip_verify" == "true" ]] && url+=", skip-cert-verify=true"
+                      surge_compatible=true
+                      ;;
+                  "any-reality")
+                      local password="$1" sni="${2:-$DEFAULT_SNI}" public_key="$3" short_id="$4"
+                      url="anytls://${password}@${link_ip}:${port}?security=reality&sni=${sni}&fp=chrome&pbk=$(_url_encode "${public_key}")&sid=${short_id}&type=tcp&headerType=none#$(_url_encode "$name")"
+                      ;;
+                  "shadowsocks")
+                      local method="$1" password="$2"
+                      case "$method" in
+                          aes-128-gcm|aes-192-gcm|aes-256-gcm|chacha20-ietf-poly1305|xchacha20-ietf-poly1305|2022-blake3-aes-128-gcm|2022-blake3-aes-256-gcm)
+                              url="${surge_name} = ss, ${link_ip}, ${port}, encrypt-method=${method}, password=${password}, udp-relay=true"
+                              surge_compatible=true
+                              ;;
+                          *)
+                              local userinfo=$(printf '%s' "${method}:${password}" | base64 | tr -d '\n\r ' | tr '+/' '-_' | tr -d '=')
+                              url="ss://${userinfo}@${link_ip}:${port}#$(_url_encode "$name")"
+                              _warn "Surge 不支持 Shadowsocks 加密方式: ${method}，保留通用分享链接。"
+                              ;;
+                      esac
+                      ;;
+                  "shadowsocks-shadowtls")
+                      local method="$1" pw="$2" spw="$3" sni="$4"
+                      url="${surge_name} = ss, ${link_ip}, ${port}, encrypt-method=${method}, password=${pw}, shadow-tls-password=${spw}, shadow-tls-version=3, shadow-tls-sni=${sni}"
+                      surge_compatible=true
+                      ;;
+                  "vless-ws")
+                      local uuid="$1" ws_path="$2"
+                      local ed_path=$(_ws_path_with_early_data "$ws_path")
+                      url="vless://${uuid}@${link_ip}:443?encryption=none&security=tls&type=ws&host=${link_ip}&path=$(_url_encode "$ed_path")&sni=${link_ip}#$(_url_encode "$name")"
+                      ;;
+                  "trojan-ws")
+                      local password="$1" ws_path="$2"
+                      local ed_path=$(_ws_path_with_early_data "$ws_path")
+                      url="${surge_name} = trojan, ${link_ip}, 443, password=${password}, sni=${link_ip}, ws=true, ws-path=${ed_path}, ws-headers=Host:${link_ip}"
+                      surge_compatible=true
+                      ;;
+                  "socks")
+                      local username="$1" password="$2"
+                      url="${surge_name} = socks5, ${link_ip}, ${port}, ${username}, ${password}, udp-relay=true"
+                      surge_compatible=true
+                      ;;
+              esac
+
+              if [ -n "$url" ]; then
+                  echo ""
+                  if [ "$surge_compatible" = true ]; then
+                      echo -e "${YELLOW}═══════════════════ Surge 节点 ═══════════════════${NC}"
+                      echo -e "${CYAN}${url}${NC}"
+                      echo -e "${YELLOW}═════════════════════════════════════════════════${NC}"
+                  else
+                      local clean_url=$(echo "$url" | sed 's/&insecure=1//g' | sed 's/&pcs=[a-fA-F0-9]*//g')
+                      if [ "$clean_url" != "$url" ] && [[ "$type" != "hysteria2" ]] && [[ "$type" != "tuic" ]] && [[ "$type" != "vless-reality" ]] && [[ "$type" != "any-reality" ]]; then
+                          echo -e "${YELLOW}═══════════════ 分享链接（Surge 不支持） ═══════════════${NC}"
+                          echo -e "${CYAN}${url}${NC}"
+                          echo -e "${YELLOW}════════════════════════════════════════════════════${NC}"
+                          echo ""
+                          echo -e "${YELLOW}═════════════ CF优选专用链接（Surge 不支持） ═════════════${NC}"
+                          echo -e "${CYAN}${clean_url}${NC}"
+                          echo -e "${YELLOW}══════════════════════════════════════════════════════${NC}"
+                      else
+                          echo -e "${YELLOW}════════════ 分享链接（Surge 暂不支持该协议） ════════════${NC}"
+                          echo -e "${CYAN}${url}${NC}"
+                          echo -e "${YELLOW}══════════════════════════════════════════════════════${NC}"
+                      fi
+                  fi
+
+                  if [ -n "$tag" ] && [ "$tag" != "null" ]; then
+                      if [[ "$tag" == argo-* ]]; then
+                          _atomic_modify_json "$ARGO_METADATA_FILE" '. + {($tag): ((.[$tag] // {}) + {share_link:$url, name:$name})}' \
+                              --arg tag "$tag" --arg url "$url" --arg name "$name" || return 1
+                      else
+                          _atomic_modify_json "$METADATA_FILE" '
+                              . + {($tag): ((.[$tag] // {}) + {
+                                  share_link:$url,
+                                  name:$name,
+                                  owner:"singbox-main",
+                                  variant:$variant,
+                                  clientServer:$server
+                              } | if has("yaml") then . else .yaml = true end)}
+                          ' --arg tag "$tag" --arg url "$url" --arg name "$name" --arg variant "$type" --arg server "$metadata_ip" || return 1
+                      fi
+                  fi
+              fi
+              if [ -n "$tag" ] && [ "$tag" != "null" ] && [[ "$tag" != argo-* ]]; then
+                  _atomic_modify_json "$METADATA_FILE" '
+                      . + {($tag): ((.[$tag] // {}) + {
+                          name:$name,
+                          owner:"singbox-main",
+                          variant:$variant,
+                          clientServer:$server
+                      } | if has("yaml") then . else .yaml = true end)}
+                  ' --arg tag "$tag" --arg name "$name" --arg variant "$type" --arg server "$metadata_ip" || return 1
+              fi
+              return 0
+          }
+          '''
+
+          pat = re.compile(r'(?ms)^_show_node_link\(\) \{.*?^\}\n(?=_show_cdn_guidance\(\) \{)')
+          text, n = pat.subn(new_show, text, count=1)
+          if n != 1:
+              raise SystemExit('failed to replace _show_node_link')
+          main.write_text(text, encoding='utf-8')
+
+          # Advanced relay: native Surge lines for Surge-supported entry protocols.
+          relay = root / 'advanced_relay.sh'
+          text = relay.read_text(encoding='utf-8')
+          replacements = [
+              (r'^\s*link="hysteria2://.*$',
+               '        link="${node_name} = hysteria2, ${link_ip}, ${listen_port}, password=${password}, sni=${entrance_sni}, skip-cert-verify=true"\n        [ -n "$port_range" ] && link+=", port-hopping=${port_range}"'),
+              (r'^\s*link="tuic://.*$',
+               '        link="${node_name} = tuic-v5, ${link_ip}, ${listen_port}, uuid=${uuid}, password=${password}, sni=${entrance_sni}, alpn=h3, skip-cert-verify=true"'),
+              (r'^\s*link="anytls://.*$',
+               '        link="${node_name} = anytls, ${link_ip}, ${listen_port}, password=${password}, sni=${entrance_sni}, skip-cert-verify=true"'),
+          ]
+          for pattern, repl in replacements:
+              text, n = re.subn(pattern, repl, text, count=1, flags=re.M)
+              if n != 1:
+                  raise SystemExit(f'failed relay patch: {pattern}')
+
+          old = '''    if [ -n "$current_link" ]; then
+              new_link=$(printf '%s' "$current_link" | sed -E "s/(:${old_port})([?&#\\/]|$)/:${new_port}\\2/g")
+          fi'''
+          new = '''    if [ -n "$current_link" ]; then
+              if [[ "$current_link" == *" = "* ]]; then
+                  new_link="${current_link/, ${old_port},/, ${new_port},}"
+              else
+                  new_link=$(printf '%s' "$current_link" | sed -E "s/(:${old_port})([?&#\\/]|$)/:${new_port}\\2/g")
+              fi
+          fi'''
+          if old not in text:
+              raise SystemExit('failed to locate relay port-link update block')
+          text = text.replace(old, new, 1)
+          text = text.replace('echo -e "分享链接:"', 'echo -e "Surge节点 / 分享链接:"')
+          text = text.replace('echo -e "      分享链接: ${CYAN}${link}${NC}"', 'echo -e "      Surge节点 / 分享链接: ${CYAN}${link}${NC}"')
+          relay.write_text(text, encoding='utf-8')
+
+          # Xray: only Shadowsocks among its current node menu is natively supported by Surge.
+          xray = root / 'xray_manager.sh'
+          text = xray.read_text(encoding='utf-8')
+          text, n = re.subn(
+              r'^\s*local link="ss://\$\{ss_user_info\}@\$\{link_ip\}:\$\{port\}#\$\(_url_encode "\$name"\)"$',
+              '    local link="${name} = ss, ${link_ip}, ${port}, encrypt-method=${method}, password=${password}, udp-relay=true"',
+              text, count=1, flags=re.M)
+          if n != 1:
+              raise SystemExit('failed to patch Xray Shadowsocks output')
+
+          old = '''    if [ -n "$old_link" ]; then
+              new_link=$(echo "$old_link" | sed -E "s/(:${old_port})([?&#\\/]|$)/:${new_port}\\2/g; s/(-${old_port})([?&#\\/]|$)/-${new_port}\\2/g; s/#[^#]*$/#$(_url_encode "$new_name")/g")
+          fi'''
+          new = '''    if [ -n "$old_link" ]; then
+              if [[ "$old_link" == *" = ss, "* ]]; then
+                  new_link="${old_link/, ${old_port},/, ${new_port},}"
+                  new_link="${new_name} =${new_link#*=}"
+              else
+                  new_link=$(echo "$old_link" | sed -E "s/(:${old_port})([?&#\\/]|$)/:${new_port}\\2/g; s/(-${old_port})([?&#\\/]|$)/-${new_port}\\2/g; s/#[^#]*$/#$(_url_encode "$new_name")/g")
+              fi
+          fi'''
+          if old not in text:
+              raise SystemExit('failed to locate Xray port-link update block')
+          text = text.replace(old, new, 1)
+          xray.write_text(text, encoding='utf-8')
+
+          note = root / 'SURGE.md'
+          note.write_text('''# Surge 版本说明\n\n本目录镜像自 `0xdabiaoge/singbox-lite`，并将可被 Surge 原生支持的节点输出改为 Surge `[Proxy]` 单行格式。\n\n原生 Surge 输出：Trojan + WebSocket + TLS、Hysteria2、TUIC v5、AnyTLS、Shadowsocks、Shadowsocks + Shadow TLS v3、SOCKS5。\n\nVLESS、AnyTLS + Reality，以及 Xray 菜单中的 Reality / XHTTP / gRPC 变种没有对应的 Surge 原生协议格式，因此保留原分享链接，不伪造不可用配置。\n''', encoding='utf-8')
+          PY
+
+      - name: Validate scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in Script/singbox-lite/*.sh; do
+            bash -n "$f"
+          done
+          grep -q 'raw.githubusercontent.com/Hugh0306/surge/main/Script/singbox-lite' Script/singbox-lite/singbox.sh
+          grep -q ' = anytls,' Script/singbox-lite/singbox.sh
+          grep -q ' = tuic-v5,' Script/singbox-lite/singbox.sh
+          grep -q ' = hysteria2,' Script/singbox-lite/singbox.sh
+          grep -q ' = trojan,' Script/singbox-lite/singbox.sh
+          grep -q ' = ss,' Script/singbox-lite/singbox.sh
+          grep -q ' = socks5,' Script/singbox-lite/singbox.sh
+
+      - name: Commit mirrored Surge fork
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/mirror-singbox-lite-surge.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Script/singbox-lite .github/workflows/mirror-singbox-lite-surge.yml
+          git commit -m 'Mirror singbox-lite with Surge-compatible output'
+          git push
