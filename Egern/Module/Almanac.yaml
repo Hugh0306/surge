@@ -1,0 +1,13 @@
+name: "岁时黄历 · 自动刷新"
+description: "农历、节气、宜忌、时辰；北京时间每小时05分请求自动刷新"
+author: "jnlaoshu（原版） / Hugh0306（刷新补丁）"
+homepage: "https://github.com/Hugh0306/surge"
+scriptings:
+  - generic:
+      name: "almanac-auto-refresh"
+      script_url: "https://raw.githubusercontent.com/Hugh0306/surge/main/Egern/Widget/Almanac.js"
+      update_interval: 3600
+      timeout: 20
+widgets:
+  - name: "岁时黄历-自动刷新"
+    script_name: "almanac-auto-refresh"
